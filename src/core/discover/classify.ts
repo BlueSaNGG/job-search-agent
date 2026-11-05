@@ -1,4 +1,10 @@
 // Rule-based screening. No model calls, so it is free and fully testable.
+//
+// Fork change (experienced mode): this fork screens for experienced roles,
+// not only entry-level ones. Senior titles are kept, and years of experience
+// in a JD are a signal (Maybe), never an exclusion. Still excluded: Staff /
+// Principal / Lead / Manager / Director titles, internships, and clearance
+// or citizenship requirements.
 
 export type Category =
   | "QA/SDET"
@@ -43,7 +49,7 @@ function normalizeTitle(title: string): string {
 }
 
 const TITLE_EXCLUDE =
-  /\b(senior|sr\.?|staff|principal|lead|manager|director|head of|intern(s|ship)?)\b/i;
+  /\b(staff|principal|lead|manager|director|head of|intern(s|ship)?)\b/i;
 
 const TITLE_ENTRY = new RegExp(
   [
@@ -117,13 +123,12 @@ export function classify(title: string, description = ""): Classification {
     reasons.push(`title: ${t.match(TITLE_MAYBE)![0].trim()}`);
   }
 
+  // Experienced mode: a 3+ year requirement makes a plain title a Maybe;
+  // it never drops the job.
   for (const y of yearsMentions(description)) {
-    if (y.lo >= 3) {
-      return { category, level: "excluded", reasons: [`${y.lo}+ years of experience required`] };
-    }
-    if (y.hi !== null && y.hi >= 3) {
+    if (y.lo >= 3 || (y.hi !== null && y.hi >= 3)) {
       maybe = true;
-      reasons.push(`JD: ${y.lo}-${y.hi} years`);
+      reasons.push(`JD: ${y.lo}${y.hi !== null ? "-" + y.hi : "+"} years`);
     } else {
       entry = true;
       reasons.push(`JD: ${y.lo}${y.hi !== null ? "-" + y.hi : "+"} years`);
