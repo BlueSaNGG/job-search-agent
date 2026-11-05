@@ -180,7 +180,7 @@ export function renderEmail(
   const best = ranked ? [...entryJobs, ...maybeJobs].sort((a, b) => score(b) - score(a))[0] : undefined;
 
   const subject =
-    `Entry-level SWE jobs · ${entryJobs.length} entry · ${maybeJobs.length} maybe` +
+    `SWE jobs · ${entryJobs.length} entry · ${maybeJobs.length} maybe` +
     (best ? ` · best match: ${best.companyName} (${score(best)})` : "") +
     ` · ${day}`;
 
@@ -195,12 +195,12 @@ export function renderEmail(
   if (opts.rankingError) notes.push(`Ranking by resume wasn't available today: ${opts.rankingError}`);
 
   const sections = [
-    { title: "Entry — clear early-career matches", jobs: entryJobs.slice(0, MAX_LISTED), more: Math.max(0, entryJobs.length - MAX_LISTED) },
+    { title: "Entry — clear matches", jobs: entryJobs.slice(0, MAX_LISTED), more: Math.max(0, entryJobs.length - MAX_LISTED) },
     { title: "Maybe — borderline", jobs: maybeJobs.slice(0, MAX_LISTED), more: Math.max(0, maybeJobs.length - MAX_LISTED) },
   ];
 
   // ---------- plain text ----------
-  const textLines = [`Entry-level SWE jobs — ${day}`, summary, ""];
+  const textLines = [`SWE jobs — ${day}`, summary, ""];
   for (const sec of sections) {
     textLines.push(`${sec.title.toUpperCase()} (${sec.jobs.length + sec.more})`, "");
     if (!sec.jobs.length) textLines.push("(none today)", "");
@@ -254,7 +254,7 @@ ${rows}
   const html = `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;color:${INK};max-width:960px;background:#ffffff">
 <div style="height:6px;background:${GREEN};border-radius:3px 3px 0 0"></div>
 <div style="background:${PINK_SOFT};padding:18px 20px;border-radius:0 0 8px 8px">
-<h2 style="margin:0 0 6px;font-size:21px;color:${GREEN}">Entry-level SWE Jobs — ${esc(day)}</h2>
+<h2 style="margin:0 0 6px;font-size:21px;color:${GREEN}">SWE Jobs — ${esc(day)}</h2>
 <p style="margin:0;color:${MUTED}"><b style="color:${GREEN}">${entryJobs.length} entry</b> · ${esc(summary.replace(/^\d+ entry · /, ""))}</p>
 </div>
 ${sectionHtml(sections[0], GREEN, "#ffffff")}
