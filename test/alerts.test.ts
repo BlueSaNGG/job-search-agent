@@ -177,10 +177,10 @@ test("email: Entry and Maybe sections, summary line, escaping, failures", () => 
     job("e2", { companyName: "Anthropic", title: "Software Engineer, New Grad" }),
   ];
   const email = renderEmail(jobs, { date: new Date("2026-10-11T18:00:00Z"), failed: ["Apple"], maxAgeDays: 1, openMatches: 85, timeZone: "America/Chicago" });
-  assert.equal(email.subject, "Entry-level SWE jobs · 2 entry · 1 maybe · 2026-10-11");
+  assert.equal(email.subject, "SWE jobs · 2 entry · 1 maybe · 2026-10-11");
   const t = email.text;
   assert.match(t, /2 entry · 1 maybe · newly posted since the last email · 85 matching roles open in total/);
-  assert.ok(t.indexOf("ENTRY — CLEAR EARLY-CAREER MATCHES (2)") < t.indexOf("Anthropic"));
+  assert.ok(t.indexOf("ENTRY — CLEAR MATCHES (2)") < t.indexOf("Anthropic"));
   assert.ok(t.indexOf("Anthropic") < t.indexOf("Stripe") && t.indexOf("Stripe") < t.indexOf("MAYBE — BORDERLINE (1)"));
   assert.ok(t.indexOf("MAYBE — BORDERLINE") < t.indexOf("Airbnb"));
   assert.match(t, /Rule: title: Software Engineer II/);
@@ -193,7 +193,7 @@ test("email: Entry and Maybe sections, summary line, escaping, failures", () => 
 
 test("email: empty section says none today; long sections are cut", () => {
   const one = renderEmail([job("a", { level: "maybe" })], { date: new Date("2026-10-11T18:00:00Z") });
-  assert.match(one.text, /ENTRY — CLEAR EARLY-CAREER MATCHES \(0\)\n\n\(none today\)/);
+  assert.match(one.text, /ENTRY — CLEAR MATCHES \(0\)\n\n\(none today\)/);
   assert.match(one.html, /\(none today\)/);
   const many = renderEmail(Array.from({ length: 230 }, (_, i) => job(`j${i}`)), { date: new Date("2026-10-11T18:00:00Z") });
   assert.match(many.text, /…and 30 more\./);
