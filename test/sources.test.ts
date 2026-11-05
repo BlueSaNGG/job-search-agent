@@ -165,8 +165,8 @@ test("Apple: reads search results and details from embedded page data", async ()
   const company: Company = { id: "apple", name: "Apple", group: "t", starred: false, source: { kind: "apple" } };
   const r = await discoverCompany(company, f, { sleep: noSleep });
   assert.equal(r.listed, 2);
-  assert.deepEqual(r.matched.map((j) => [j.title, j.level, j.url]), [["Software Engineer, New Grad", "entry", "https://jobs.apple.com/en-us/details/200/software-engineer-new-grad"]]);
-  assert.equal(r.skipped.excluded, 1, "10 years required");
+  assert.deepEqual(r.matched.map((j) => [j.title, j.level, j.url]), [["Software Engineer, New Grad", "entry", "https://jobs.apple.com/en-us/details/200/software-engineer-new-grad"], ["Graphics Software Engineer", "maybe", "https://jobs.apple.com/en-us/details/300/graphics-software-engineer"]]);
+  assert.equal(r.skipped.excluded, 0, "fork: 10 years required is kept as Maybe");
 });
 
 test("Apple: a changed page format is reported, not silently empty", async () => {
