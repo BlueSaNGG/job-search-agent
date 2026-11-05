@@ -70,9 +70,9 @@ test("discoverCompany keeps only matching jobs and counts the rest", async () =>
   const company = { id: "acme", name: "Acme", group: "t", starred: false, source: { kind: "greenhouse" as const, slug: "acme" } };
   const r = await discoverCompany(company, fakeFetch({ "boards/acme/jobs": GREENHOUSE }), { now: "2026-01-01T00:00:00Z" });
   assert.equal(r.listed, 6);
-  assert.deepEqual(r.matched.map((j) => [j.externalId, j.level]), [["1", "entry"], ["3", "maybe"], ["5", "maybe"]]);
-  assert.deepEqual(r.skipped, { notSwe: 1, excluded: 2, noSignal: 0 });
-  assert.deepEqual(r.matched[2].reasons, ["JD doesn't state years of experience"]);
+  assert.deepEqual(r.matched.map((j) => [j.externalId, j.level]), [["1", "entry"], ["2", "maybe"], ["3", "maybe"], ["5", "maybe"]]);
+  assert.deepEqual(r.skipped, { notSwe: 1, excluded: 1, noSignal: 0 });
+  assert.deepEqual(r.matched.find((j) => j.externalId === "5")!.reasons, ["JD doesn't state years of experience"]);
   assert.equal(r.matched[0].category, "SWE");
   assert.equal(r.matched[0].companyName, "Acme");
 });
@@ -116,14 +116,14 @@ test("discover saves matches, reports counts, and reruns report only new jobs", 
   const map = { "boards/cloudflare/jobs": GREENHOUSE };
   const t = setup(map);
   const r1 = (await (await t.req("discover", { company: "cloudflare" })).json()) as any;
-  assert.equal(r1.matched, 3);
-  assert.equal(r1.newCount, 3);
-  assert.equal(t.get().discovered.length, 3);
+  assert.equal(r1.matched, 4, "fork: Senior job is now matched");
+  assert.equal(r1.newCount, 4);
+  assert.equal(t.get().discovered.length, 4);
   assert.ok(t.get().lastDiscovery.cloudflare);
 
   const r2 = (await (await t.req("discover", { company: "cloudflare" })).json()) as any;
   assert.equal(r2.newCount, 0);
-  assert.equal(t.get().discovered.length, 3);
+  assert.equal(t.get().discovered.length, 4);
 });
 
 test("discover explains companies that can't be read and boards that fail", async () => {
