@@ -73,14 +73,12 @@ test("title formats seen on Amazon and Netflix", () => {
   assert.equal(classify("Software Engineer 3").level, "maybe");
   assert.equal(classify("Software Engineer, 3D Graphics").level, "unknown", "3D is not a level");
   assert.equal(classify("Software Development Engineer Intern, Amazon University").level, "excluded");
-  assert.equal(classify("Software Engineer II/Sr. Software Engineer").level, "excluded");
-  assert.equal(classify("Graphics Software Engineer", "BS + 10 years of relevant experience.").level, "excluded");
+  assert.equal(classify("Software Engineer II/Sr. Software Engineer").level, "maybe", "fork: Senior is kept in experienced mode");
+  assert.equal(classify("Graphics Software Engineer", "BS + 10 years of relevant experience.").level, "maybe", "fork: 10 years is a Maybe, not an exclusion");
 });
 
 test("excluded titles", () => {
   const titles = [
-    "Senior Software Engineer",
-    "Sr. Backend Engineer",
     "Staff Software Engineer",
     "Software Engineering Lead",
     "Engineering Manager, Backend",
@@ -98,8 +96,8 @@ test("plain titles are decided by the job description", () => {
   assert.equal(classify("Software Engineer", "No prior experience required.").level, "entry");
   assert.equal(classify("Software Engineer", "2 years of experience building services").level, "entry");
   assert.equal(classify("Software Engineer", "1-3 years of relevant experience").level, "maybe");
-  assert.equal(classify("Software Engineer", "3+ years of experience required").level, "excluded");
-  assert.equal(classify("Software Engineer", "5 years of industry experience").level, "excluded");
+  assert.equal(classify("Software Engineer", "3+ years of experience required").level, "maybe", "fork: 3+ years is kept");
+  assert.equal(classify("Software Engineer", "5 years of industry experience").level, "maybe", "fork: 5 years is kept");
 });
 
 test("a plain title whose JD doesn't state years is a Maybe", () => {
@@ -108,11 +106,17 @@ test("a plain title whose JD doesn't state years is a Maybe", () => {
   assert.deepEqual(c.reasons, ["JD doesn't state years of experience"]);
   assert.equal(classify("Software Engineer, Payments").level, "unknown", "no description yet: fetch it first");
   assert.equal(classify("Product Designer", "Design things.").level, "unknown", "not a software role");
-  assert.equal(classify("Senior Software Engineer", "Build APIs.").level, "excluded");
+  assert.equal(classify("Senior Software Engineer", "Build APIs.").level, "maybe", "fork: Senior is kept");
 });
 
-test("a 3+ year requirement overrides an entry-level title", () => {
-  assert.equal(classify("Software Engineer I", "Requires 4+ years of experience").level, "excluded");
+test("an experienced requirement does not drop an entry-level title", () => {
+  assert.equal(classify("Software Engineer I", "Requires 4+ years of experience").level, "entry", "fork: entry title still wins; the job is kept");
+});
+
+test("experienced titles are kept", () => {
+  assert.equal(classify("Senior Software Engineer").level, "unknown", "no description yet: fetch it first");
+  assert.equal(classify("Senior Software Engineer", "Build APIs.").level, "maybe");
+  assert.equal(classify("Sr. Backend Engineer", "5 years of experience building services").level, "maybe");
 });
 
 test("years that are not about experience are ignored", () => {
