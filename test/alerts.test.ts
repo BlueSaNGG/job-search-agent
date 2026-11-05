@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { filterByLocation, pickNewJobs, renderEmail, updateSeen } from "../src/core/alerts.ts";
+import { filterByLocation, filterOutEntry, pickNewJobs, renderEmail, updateSeen } from "../src/core/alerts.ts";
 import { plistXml, LABEL } from "../src/node/plist.ts";
 import type { DiscoveredJob } from "../src/core/discover/discover.ts";
 
@@ -170,40 +170,49 @@ test("splitByAge keeps recent jobs (with a day of slack), separates old and unda
 
 // ---------- email layout ----------
 
-test("email: Entry and Maybe sections, summary line, escaping, failures", () => {
+test("email: only the Maybe section, entry jobs are dropped, summary line, escaping, failures", () => {
   const jobs = [
     job("m1", { level: "maybe", companyName: "Airbnb", title: "Software Engineer II", reasons: ["title: Software Engineer II"] }),
+    job("m2", { level: "maybe", companyName: "Stripe", title: "Software Engineer II <script>" }),
     job("e1", { companyName: "Stripe", title: "New Grad <script>" }),
     job("e2", { companyName: "Anthropic", title: "Software Engineer, New Grad" }),
   ];
   const email = renderEmail(jobs, { date: new Date("2026-10-11T18:00:00Z"), failed: ["Apple"], maxAgeDays: 1, openMatches: 85, timeZone: "America/Chicago" });
-  assert.equal(email.subject, "SWE jobs · 2 entry · 1 maybe · 2026-10-11");
+  assert.equal(email.subject, "SWE jobs · 2 maybe · 2026-10-11");
   const t = email.text;
-  assert.match(t, /2 entry · 1 maybe · newly posted since the last email · 85 matching roles open in total/);
-  assert.ok(t.indexOf("ENTRY — CLEAR MATCHES (2)") < t.indexOf("Anthropic"));
-  assert.ok(t.indexOf("Anthropic") < t.indexOf("Stripe") && t.indexOf("Stripe") < t.indexOf("MAYBE — BORDERLINE (1)"));
-  assert.ok(t.indexOf("MAYBE — BORDERLINE") < t.indexOf("Airbnb"));
+  assert.match(t, /2 maybe · newly posted since the last email · 85 matching roles open in total/);
+  assert.doesNotMatch(t, /ENTRY/);
+  assert.doesNotMatch(t, /New Grad/);
+  assert.ok(t.indexOf("MAYBE — BORDERLINE (2)") < t.indexOf("Airbnb"));
   assert.match(t, /Rule: title: Software Engineer II/);
   assert.match(t, /Couldn't read today: Apple/);
-  assert.match(email.html, /New Grad &lt;script&gt;/);
+  assert.match(email.html, /Software Engineer II &lt;script&gt;/);
   assert.doesNotMatch(email.html, /<script>/);
-  assert.match(email.html, /href="https:\/\/stripe\.example\/e1"/);
-  assert.match(email.html, /<b style="color:#3E6D69">2 entry<\/b> · 1 maybe/);
+  assert.match(email.html, /href="https:\/\/stripe\.example\/m2"/);
+  assert.match(email.html, /<b style="color:#3E6D69">2 maybe<\/b> · newly posted/);
+});
+
+test("filterOutEntry: entry jobs are dropped, maybe jobs are kept", () => {
+  const jobs = [job("e1"), job("m1", { level: "maybe" }), job("e2")];
+  assert.deepEqual(filterOutEntry(jobs).map((j) => j.id), ["m1"]);
 });
 
 test("email: empty section says none today; long sections are cut", () => {
+  const none = renderEmail([], { date: new Date("2026-10-11T18:00:00Z") });
+  assert.match(none.text, /MAYBE — BORDERLINE \(0\)\n\n\(none today\)/);
+  assert.match(none.html, /\(none today\)/);
   const one = renderEmail([job("a", { level: "maybe" })], { date: new Date("2026-10-11T18:00:00Z") });
-  assert.match(one.text, /ENTRY — CLEAR MATCHES \(0\)\n\n\(none today\)/);
-  assert.match(one.html, /\(none today\)/);
-  const many = renderEmail(Array.from({ length: 230 }, (_, i) => job(`j${i}`)), { date: new Date("2026-10-11T18:00:00Z") });
+  assert.match(one.text, /MAYBE — BORDERLINE \(1\)/);
+  const many = renderEmail(Array.from({ length: 230 }, (_, i) => job(`j${i}`, { level: "maybe" })), { date: new Date("2026-10-11T18:00:00Z") });
   assert.match(many.text, /…and 30 more\./);
 });
 
-test("email with a ranking: sorted by match inside each section, notes in Why", () => {
+test("email with a ranking: sorted by match, notes in Why, entry jobs dropped", () => {
   const jobs = [
-    job("low", { companyName: "Airbnb" }),
+    job("low", { companyName: "Airbnb", level: "maybe" }),
     job("top", { companyName: "Stripe", level: "maybe" }),
-    job("mid", { companyName: "Reddit" }),
+    job("mid", { companyName: "Reddit", level: "maybe" }),
+    job("entry", { companyName: "Anthropic" }),
   ];
   const email = renderEmail(jobs, {
     date: new Date("2026-10-11T18:00:00Z"),
@@ -211,8 +220,9 @@ test("email with a ranking: sorted by match inside each section, notes in Why", 
   });
   assert.match(email.subject, /best match: Stripe \(88\)/);
   const t = email.text;
-  assert.ok(t.indexOf("[Match 67] Reddit") < t.indexOf("[Match 41] Airbnb"), "entry sorted by score");
-  assert.ok(t.indexOf("[Match 41] Airbnb") < t.indexOf("[Match 88] Stripe"), "maybe section comes after entry");
+  assert.ok(t.indexOf("[Match 88] Stripe") < t.indexOf("[Match 67] Reddit"), "sorted by score");
+  assert.ok(t.indexOf("[Match 67] Reddit") < t.indexOf("[Match 41] Airbnb"), "sorted by score");
+  assert.doesNotMatch(t, /Anthropic/);
   assert.match(t, /Why: Python <services>\n  Gap: No Kafka/);
   assert.match(email.html, /✓ Python &lt;services&gt;/);
   assert.match(email.html, /<th[^>]*>Match<\/th>/);
@@ -227,7 +237,7 @@ test("email explains when ranking wasn't available, and has no Match column", ()
 
 test("email shows the posting date", () => {
   assert.equal(postedLabel(job("a", { postedAt: "2026-10-17T15:00:00Z" }), "America/Chicago"), "Posted Oct 17");
-  const email = renderEmail([job("a", { postedAt: "2026-10-17T15:00:00Z" }), job("b", { title: "No date" })], {
+  const email = renderEmail([job("a", { level: "maybe", postedAt: "2026-10-17T15:00:00Z" }), job("b", { level: "maybe", title: "No date" })], {
     date: new Date("2026-10-17T19:00:00Z"),
     timeZone: "America/Chicago",
   });
@@ -274,7 +284,7 @@ test("filterBySalary drops ranges topping out under the minimum, keeps unstated 
 });
 
 test("email has a Salary column", () => {
-  const email = renderEmail([job("a", { salary: { min: 138000, max: 192000 } }), job("b")], { date: new Date("2026-10-19T18:00:00Z") });
+  const email = renderEmail([job("a", { level: "maybe", salary: { min: 138000, max: 192000 } }), job("b", { level: "maybe" })], { date: new Date("2026-10-19T18:00:00Z") });
   assert.match(email.html, /<th[^>]*>Salary<\/th>/);
   assert.match(email.html, /\$138k–\$192k/);
   assert.match(email.text, /Salary \$138k–\$192k/);

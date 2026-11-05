@@ -43,6 +43,16 @@ export function filterBySalary(jobs: DiscoveredJob[], minSalary: number) {
 }
 
 /**
+ * Drops entry-level jobs: this fork only emails experienced (maybe) roles.
+ * Classification still labels them "entry" (see classify.ts); they are
+ * filtered out here, before ranking, so no Workers AI calls are spent on
+ * them and they are never marked as emailed.
+ */
+export function filterOutEntry(jobs: DiscoveredJob[]) {
+  return jobs.filter((j) => j.level !== "entry");
+}
+
+/**
  * Sorts jobs by how recently they were posted.
  *   recent:  posted within maxAgeDays, plus one day of slack because some sites
  *            only give a date (no time) and runs don't happen at the same minute.
@@ -152,8 +162,10 @@ const shortDate = (j: DiscoveredJob, timeZone?: string) => {
 };
 
 /**
- * The daily email: a summary line, then two tables, Entry (clear matches) and
- * Maybe (borderline), each sorted by resume match when there is a ranking.
+ * The daily email: a summary line, then the Maybe (borderline, experienced)
+ * table, sorted by resume match when there is a ranking. Entry-level jobs
+ * are not emailed (see filterOutEntry); if any reach this function they
+ * are dropped here too, so the subject and counts never mention them.
  */
 export function renderEmail(
   jobs: DiscoveredJob[],
@@ -174,18 +186,17 @@ export function renderEmail(
   const score = (j: DiscoveredJob) => opts.ranking?.scores[j.id] ?? 0;
   const order = (a: DiscoveredJob, b: DiscoveredJob) =>
     (ranked ? score(b) - score(a) : 0) || a.companyName.localeCompare(b.companyName) || a.title.localeCompare(b.title);
-  const entryJobs = jobs.filter((j) => j.level === "entry").sort(order);
-  const maybeJobs = jobs.filter((j) => j.level !== "entry").sort(order);
+  const maybeJobs = filterOutEntry(jobs).sort(order);
   const day = opts.date.toLocaleDateString("en-CA", opts.timeZone ? { timeZone: opts.timeZone } : {});
-  const best = ranked ? [...entryJobs, ...maybeJobs].sort((a, b) => score(b) - score(a))[0] : undefined;
+  const best = ranked ? [...maybeJobs].sort((a, b) => score(b) - score(a))[0] : undefined;
 
   const subject =
-    `SWE jobs · ${entryJobs.length} entry · ${maybeJobs.length} maybe` +
+    `SWE jobs · ${maybeJobs.length} maybe` +
     (best ? ` · best match: ${best.companyName} (${score(best)})` : "") +
     ` · ${day}`;
 
   const summary =
-    `${entryJobs.length} entry · ${maybeJobs.length} maybe` +
+    `${maybeJobs.length} maybe` +
     ((opts.maxAgeDays ?? 0) > 0 ? " · newly posted since the last email" : opts.firstRun ? " · first run: every open match" : " · new since the last email") +
     (opts.openMatches !== undefined ? ` · ${opts.openMatches} matching roles open in total` : "");
 
@@ -195,7 +206,6 @@ export function renderEmail(
   if (opts.rankingError) notes.push(`Ranking by resume wasn't available today: ${opts.rankingError}`);
 
   const sections = [
-    { title: "Entry — clear matches", jobs: entryJobs.slice(0, MAX_LISTED), more: Math.max(0, entryJobs.length - MAX_LISTED) },
     { title: "Maybe — borderline", jobs: maybeJobs.slice(0, MAX_LISTED), more: Math.max(0, maybeJobs.length - MAX_LISTED) },
   ];
 
@@ -255,10 +265,9 @@ ${rows}
 <div style="height:6px;background:${GREEN};border-radius:3px 3px 0 0"></div>
 <div style="background:${PINK_SOFT};padding:18px 20px;border-radius:0 0 8px 8px">
 <h2 style="margin:0 0 6px;font-size:21px;color:${GREEN}">SWE Jobs — ${esc(day)}</h2>
-<p style="margin:0;color:${MUTED}"><b style="color:${GREEN}">${entryJobs.length} entry</b> · ${esc(summary.replace(/^\d+ entry · /, ""))}</p>
+<p style="margin:0;color:${MUTED}"><b style="color:${GREEN}">${maybeJobs.length} maybe</b> · ${esc(summary.replace(/^\d+ maybe · /, ""))}</p>
 </div>
-${sectionHtml(sections[0], GREEN, "#ffffff")}
-${sectionHtml(sections[1], PINK, GREEN)}
+${sectionHtml(sections[0], PINK, GREEN)}
 ${notes.map((n) => `<p style="color:${MUTED};font-size:12px;margin:16px 0 0">${esc(n)}</p>`).join("\n")}
 <p style="color:${MUTED};font-size:11px;opacity:.8;margin-top:12px">Sent by your Job Search Agent. Screening rules: src/core/discover/classify.ts</p>
 </div>`;

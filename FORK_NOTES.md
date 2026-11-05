@@ -4,7 +4,10 @@ Forked from tianna0/job-search-agent. Upstream is a daily watcher for
 **newly posted entry-level software roles**. This fork is changed to an
 **experienced mode**: it watches newly posted software roles across the
 same ~40 companies, including Senior titles and JDs asking for 3+ years.
-It is still not a tracker for one specific posting.
+Entry-level roles are not emailed at all: classification still labels
+them, but the pipeline drops them before ranking, so the daily email
+contains only Maybe (experienced) roles. It is still not a tracker for
+one specific posting.
 
 ## What is configured in this fork (GitHub Actions variables, not secrets)
 

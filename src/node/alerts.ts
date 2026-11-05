@@ -26,7 +26,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { findCompany, readableCompanyIds } from "../core/discover/companies.ts";
 import { discoverCompany, type DiscoveredJob } from "../core/discover/discover.ts";
-import { filterByLocation, filterBySalary, pickNewJobs, renderEmail, splitByAge, updateSeen, type SeenJobs } from "../core/alerts.ts";
+import { filterByLocation, filterBySalary, filterOutEntry, pickNewJobs, renderEmail, splitByAge, updateSeen, type SeenJobs } from "../core/alerts.ts";
 import { rankJobs, type Ranking } from "../core/rank.ts";
 import { mailConfig, sendMail } from "./mailer.ts";
 import { workersAi, workersAiEmbed } from "./workers-ai.ts";
@@ -127,8 +127,12 @@ async function main() {
   const locations = (process.env.ALERT_LOCATIONS ?? "").split(",");
   const inLocations = filterByLocation(matched, locations);
   const minSalary = numberSetting(process.env.ALERT_MIN_SALARY, 110000);
-  const { kept: relevant, dropped: underpaid } = filterBySalary(inLocations, minSalary);
+  const { kept: paid, dropped: underpaid } = filterBySalary(inLocations, minSalary);
   if (underpaid.length) console.log(`${underpaid.length} jobs dropped: stated pay tops out under $${minSalary.toLocaleString("en-US")}.`);
+  // This fork only watches experienced roles: entry-level jobs are dropped
+  // here, before ranking, so they are never emailed or marked as seen.
+  const relevant = filterOutEntry(paid);
+  if (relevant.length !== paid.length) console.log(`${paid.length - relevant.length} entry-level jobs skipped: only experienced roles are emailed.`);
   const previous = loadSeen();
   const firstRun = previous === null;
   const seen = previous ?? { jobs: {} };
