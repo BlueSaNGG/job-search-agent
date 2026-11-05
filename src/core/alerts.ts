@@ -119,6 +119,9 @@ export function filterByLocation(jobs: DiscoveredJob[], keywords: string[]): Dis
   return jobs.filter((j) => {
     const loc = j.location.trim();
     if (!loc) return true;
+    // Workday lists multi-location postings as "2 Locations" with no place
+    // names; the detail page has the real locations, so don't drop them here.
+    if (/^\d+\s+locations?$/i.test(loc)) return true;
     return places(loc).some((p) => {
       // Keyword hits only count for the place they're in; "IN" in "Bengaluru, KA, IN" is not "US".
       if (res.some((re) => re.test(p))) return !(wantsUs && FOREIGN.test(p) && !/\b(usa|united states)\b/i.test(p));
