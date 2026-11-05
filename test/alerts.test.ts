@@ -38,6 +38,11 @@ test("filterByLocation keeps matching and unlisted locations; empty keywords kee
   assert.equal(filterByLocation(jobs, []).length, 4);
 });
 
+test("filterByLocation keeps Workday multi-location postings like '2 Locations'", () => {
+  const jobs = [job("multi", { location: "2 Locations" }), job("blr", { location: "Bengaluru, India" })];
+  assert.deepEqual(filterByLocation(jobs, ["China", "Shanghai"]).map((j) => j.id), ["multi"]);
+});
+
 test("filterByLocation matches whole words and understands US state codes", () => {
   const jobs = [
     job("aarhus", { location: "Aarhus, Denmark" }),
