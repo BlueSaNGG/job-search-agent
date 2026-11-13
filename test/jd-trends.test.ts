@@ -66,6 +66,27 @@ test("full 14-slot report deduplicates recurring posting IDs and counts two halv
   assert.equal(report.sample.ambiguous_location_jobs, 0);
 });
 
+test("a skill removed from newer revisions still appears as a declining trend", () => {
+  const records = SLOTS.map((slot, i) => {
+    const jobs = Array.from({ length: 10 }, (_, n) =>
+      job("stable-" + n, "company-" + Math.floor(n / 2),
+        i < 7 ? "Python software infrastructure" : "Bazel build infrastructure"));
+    return buildDailyArchive(jobs, null, slot, slot + "T23:00:00.000Z", 56, 0, 10);
+  });
+  const report = buildTrendReport(records, END);
+  assert.equal(report.status, "ready");
+  assert.equal(report.sample.unique_jobs, 10);
+  assert.equal(report.sample.updated_jobs, 10);
+  const python = report.skills.find(x => x.id === "python");
+  const bazel = report.skills.find(x => x.id === "bazel");
+  assert.ok(python, "python must remain visible even when removed from the latest job revisions");
+  assert.equal(python!.previous_jobs, 10);
+  assert.equal(python!.recent_jobs, 0);
+  assert.equal(python!.delta_percentage_points, -100);
+  assert.equal(python!.jobs, 10);
+  assert.equal(bazel?.delta_percentage_points, 100);
+});
+
 test("missing slots and source outages produce insufficient evidence, no delta claims", () => {
   const missing = buildTrendReport(SLOTS.slice(7).map((_, i) => daily(i + 7)), END);
   assert.equal(missing.status, "insufficient_evidence");
