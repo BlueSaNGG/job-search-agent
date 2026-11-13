@@ -154,3 +154,19 @@ test("infrastructure and developer-productivity roles are recognized", () => {
     assert.equal(classify(title, "5+ years of engineering experience.").level, "maybe", title);
   }
 });
+
+test("MTS titles at AI infrastructure companies are software roles", () => {
+  const titles = [
+    "Member of Technical Staff, LLM Infrastructure",
+    "Member of Technical Staff - Platform Engineering",
+    "Member of Technical Staff, AI Infrastructure Reliability",
+    "Member of Technical Staff, AI Training Infrastructure",
+    "Member of Technical Staff",
+  ];
+  for (const title of titles) {
+    assert.equal(categorize(title), "SWE", title);
+    assert.equal(classify(title, "5 years of software engineering experience").level, "maybe", title);
+  }
+  assert.equal(classify("Member of Technical Staff, New Grad").level, "entry");
+  assert.equal(classify("Staff Software Engineer").level, "excluded");
+});
