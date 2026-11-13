@@ -19,7 +19,7 @@ const SKILL_PATTERNS: Array<[string, RegExp]> = [
   ["kubernetes", /\bkubernetes\b|\bk8s\b/i],
   ["docker", /\bdocker\b|\bcontainerization\b/i],
   ["python", /\bpython\b/i],
-  ["cpp", /\bc\+\+\b|\bcplusplus\b/i],
+  ["cpp", /\bc\+\+(?!\w)|\bcplusplus\b/i],
   ["distributed_systems", /\bdistributed systems?\b/i],
   ["terraform", /\bterraform\b|\binfrastructure as code\b/i],
   ["observability", /\bobservability\b|\bprometheus\b|\bgrafana\b/i],
