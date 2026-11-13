@@ -44,7 +44,8 @@ export interface Source {
 }
 
 // Search terms for sites that need a query. The title rules do the real filtering.
-const QUERIES = ["software engineer", "new grad", "SDET"];
+// Experienced SWE plus infrastructure/platform/build; avoid limited pages on new-grad searches.
+const QUERIES = ["software engineer", "platform engineer", "infrastructure engineer", "build engineer", "SDET"];
 
 function decodeEntities(s: string): string {
   return s
