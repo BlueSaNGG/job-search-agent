@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { categorize, classify, yearsMentions } from "../src/core/discover/classify.ts";
 
-test("categories follow the seven title groups", () => {
+test("categories follow the eight title groups", () => {
   const cases: [string, string | null][] = [
     ["Full Stack Engineer", "Full-stack"],
     ["Fullstack Developer", "Full-stack"],
@@ -141,4 +141,16 @@ test("equal-opportunity wording about citizenship status is not a requirement", 
 test("a JD range demotes an entry title only when the title is not entry", () => {
   assert.equal(classify("Software Engineer", "1-3 years of experience").level, "maybe");
   assert.equal(classify("Software Engineer I", "1-3 years of experience").level, "entry");
+});
+
+test("infrastructure and developer-productivity roles are recognized", () => {
+  const titles = [
+    "Senior Infrastructure Engineer", "Platform Engineer", "Build Engineer",
+    "Build and Release Engineer", "Developer Productivity Engineer",
+    "Developer Experience Engineer", "CI/CD Engineer", "ML Infrastructure Engineer",
+  ];
+  for (const title of titles) {
+    assert.equal(categorize(title), "Infra/Platform", title);
+    assert.equal(classify(title, "5+ years of engineering experience.").level, "maybe", title);
+  }
 });
