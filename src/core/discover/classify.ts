@@ -40,7 +40,8 @@ const CATEGORY_RULES: [Category, RegExp][] = [
   ["Frontend", /front[\s-]?end|\bui software/i],
   ["Backend", /back[\s-]?end/i],
   ["SDE", /software (development|dev|developer) engineer|\bsoftware developer\b|\bsde\b/i],
-  ["SWE", /software engineer/i],
+  // AI infrastructure companies (Modal, Fireworks) use MTS for software engineers.
+  ["SWE", /software engineer|member of (?:the )?technical staff|\bmts\b/i],
 ];
 
 export function categorize(title: string): Category | null {
