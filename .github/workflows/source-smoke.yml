@@ -1,9 +1,16 @@
 name: Live source smoke test
 
 on:
-  push:
-    branches: [add-companies]
   workflow_dispatch:
+  schedule:
+    - cron: '33 14 * * 1'  # weekly Monday UTC; independent of the daily email scan
+  pull_request:
+    paths:
+      - '.github/workflows/source-smoke.yml'
+      - 'src/core/discover/**'
+      - 'src/node/check-companies.ts'
+      - 'package.json'
+
 
 permissions:
   contents: read
