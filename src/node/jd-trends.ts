@@ -203,7 +203,7 @@ export function buildTrendReport(
   const updatedJobs = [...observedHashes.values()].filter(h => h.size > 1).length;
   const previousCounts = sampleSkillCounts(previous);
   const recentCounts = sampleSkillCounts(recent);
-  const allCounts = sampleSkillCounts(all);
+
   const sourceAttempts = days.reduce((n, d) => n + d.source_coverage.attempted, 0);
   const sourceFailures = days.reduce((n, d) => n + d.source_coverage.failed, 0);
   const missingSlots = slots.filter(slot => !validated.has(slot));
@@ -216,23 +216,36 @@ export function buildTrendReport(
     skillEvidenceAll.length >= 8 && skillEvidencePrevious.length >= 3 &&
     skillEvidenceRecent.length >= 3 && rate !== null && rate <= MAX_SOURCE_FAILURE_RATE * 100;
 
-  const statuses = new Map<string, { required: number; preferred: number; mentioned: number; companies: Set<string> }>();
-  for (const job of eligibleAll) {
+  // Compare the UNION of skills in both half-windows, including ones that
+  // disappeared from the latest version of a recurring posting. Track distinct
+  // job IDs per skill across either half; do not overcount daily appearances.
+  const strongest: Record<SkillRequirement, number> = { mentioned: 0, preferred: 1, required: 2 };
+  const statuses = new Map<string, Map<string, { company: string; requirement: SkillRequirement }>>();
+  for (const job of [...eligiblePrevious, ...eligibleRecent]) {
     for (const [id, requirement] of normalizedSignals(job)) {
-      if (!statuses.has(id)) statuses.set(id, { required: 0, preferred: 0, mentioned: 0, companies: new Set() });
-      const s = statuses.get(id)!;
-      s[requirement]++;
-      s.companies.add(job.company_id);
+      if (!statuses.has(id)) statuses.set(id, new Map());
+      const byJob = statuses.get(id)!;
+      const previous = byJob.get(job.id);
+      if (!previous || strongest[requirement] > strongest[previous.requirement]) {
+        byJob.set(job.id, { company: job.company_id, requirement });
+      }
     }
   }
-
-  const skills: SkillStat[] = [...statuses.entries()].map(([id, s]) => {
+  const skillNames = new Set([...previousCounts.keys(), ...recentCounts.keys(), ...statuses.keys()]);
+  const skills: SkillStat[] = [...skillNames].map(id => {
     const p = previousCounts.get(id)?.size ?? 0, r = recentCounts.get(id)?.size ?? 0;
+    const byJob = statuses.get(id) ?? new Map();
+    const distribution = { required: 0, preferred: 0, mentioned: 0 };
+    const companies = new Set<string>();
+    for (const item of byJob.values()) {
+      distribution[item.requirement]++;
+      companies.add(item.company);
+    }
     const prevPct = good ? percentage(p, eligiblePrevious.length) : null;
     const recPct = good ? percentage(r, eligibleRecent.length) : null;
     return {
-      id, jobs: allCounts.get(id)?.size ?? 0, companies: s.companies.size,
-      required: s.required, preferred: s.preferred, mentioned: s.mentioned,
+      id, jobs: byJob.size, companies: companies.size,
+      required: distribution.required, preferred: distribution.preferred, mentioned: distribution.mentioned,
       previous_jobs: p, recent_jobs: r,
       previous_share_pct: prevPct, recent_share_pct: recPct,
       delta_percentage_points: prevPct !== null && recPct !== null
