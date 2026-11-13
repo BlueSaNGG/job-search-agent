@@ -1,0 +1,23 @@
+name: Live source smoke test
+
+on:
+  push:
+    branches: [add-companies]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-new-sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Check eight new public ATS boards
+        run: npm run check-companies -- drw imc airwallex anyscale hightouch modal fireworks crusoe
