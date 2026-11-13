@@ -3,7 +3,7 @@
 Forked from tianna0/job-search-agent. Upstream is a daily watcher for
 **newly posted entry-level software roles**. This fork is changed to an
 **experienced mode**: it watches newly posted software roles across
-62 companies (upstream had 40), including Senior titles and JDs asking
+81 companies (upstream had 40), including Senior titles and JDs asking
 for 3+ years.
 Entry-level roles are not emailed at all: classification still labels
 them, but the pipeline drops them before ranking, so the daily email
@@ -66,6 +66,37 @@ one specific posting.
   - `test/discover.test.ts` company-count assertion updated 40 → 62,
     and the chat assistant's "about 40 companies" line in
     `src/core/chat.ts` updated to "about 60".
+
+## November 2026 expansion: high-upside employers
+
+Added 19 more companies after the 62-company fork baseline, bringing the
+catalog to **81 tracked / 56 auto-readable / 25 manual-only**.
+
+- Newly configured public ATS boards (8): DRW (`drweng`, Greenhouse),
+  IMC Trading (`imc`, Greenhouse), Airwallex (`airwallex`, Ashby),
+  Anyscale (`anyscale`, Ashby), Hightouch (`hightouch-inc`, Ashby),
+  Modal (`modal`, Ashby), Fireworks AI (`fireworks`, Ashby),
+  Crusoe (`crusoe`, Ashby).
+- Manual-only additions (11): Citadel Securities, Hudson River Trading,
+  Optiver, Citadel, ByteDance/TikTok, Alibaba Cloud, DeepSeek, MiniMax,
+  PDD/Pinduoduo, Ant Group, and Kuaishou. They are listed in the app,
+  but **cannot be automatically scanned or emailed** without a working
+  supported source. Optiver's public `optiverprivate` board is partial
+  and is not substituted for its full jobs feed.
+- Run `npm run check-companies -- drw imc airwallex anyscale hightouch modal fireworks crusoe`
+  to verify the eight public boards. GitHub Actions
+  `.github/workflows/source-smoke.yml` runs the same live test on the
+  `add-companies` branch. Failed requests now return a nonzero exit code.
+- AI labs frequently call SWE positions `Member of Technical Staff` /
+  `MTS`. These titles now classify as SWE so infrastructure jobs
+  from Fireworks/Modal are not silently dropped. New-grad MTS roles
+  are still skipped from experienced-role emails.
+- Company inclusion indicates possible career and compensation upside,
+  **not** a guaranteed increase over PayPal. Compare each offer's salary,
+  bonus, equity liquidity, location, work intensity, and eligibility.
+- Location policy remains unchanged: major US metros and explicitly
+  US-based remote roles; in China, Shanghai/Hangzhou only. North-America
+  remote postings may need manual checking if they do not say US.
 
 ## What this watcher will NOT do — read before relying on it
 
