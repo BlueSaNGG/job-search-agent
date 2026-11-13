@@ -19,30 +19,6 @@
   },
   "jds": [
     {
-      "id": "example-systems:123",
-      "company_id": "example-systems",
-      "company_name": "Example Systems",
-      "title": "Infrastructure Software Engineer",
-      "url": "https://example.com/jobs/123",
-      "location": "Shanghai, China",
-      "location_status": "eligible",
-      "posted_at": null,
-      "first_seen_at": "2026-11-12T03:00:00Z",
-      "last_seen_at": "2026-11-15T03:00:00Z",
-      "description_status": "complete",
-      "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "job_fit_band": "high",
-      "skills": [
-        {
-          "id": "build_systems",
-          "label": "Build systems",
-          "requirement": "required",
-          "section": "requirements",
-          "evidence": "Own the build and test infrastructure for engineering teams"
-        }
-      ]
-    },
-    {
       "id": "example-cloud:456",
       "company_id": "example-cloud",
       "company_name": "Example Cloud",
@@ -65,6 +41,30 @@
           "evidence": "Experience improving build performance is preferred"
         }
       ]
+    },
+    {
+      "id": "example-systems:123",
+      "company_id": "example-systems",
+      "company_name": "Example Systems",
+      "title": "Infrastructure Software Engineer",
+      "url": "https://example.com/jobs/123",
+      "location": "Shanghai, China",
+      "location_status": "eligible",
+      "posted_at": null,
+      "first_seen_at": "2026-11-12T03:00:00Z",
+      "last_seen_at": "2026-11-15T03:00:00Z",
+      "description_status": "complete",
+      "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "job_fit_band": "high",
+      "skills": [
+        {
+          "id": "build_systems",
+          "label": "Build systems",
+          "requirement": "required",
+          "section": "requirements",
+          "evidence": "Own the build and test infrastructure for engineering teams"
+        }
+      ]
     }
   ],
   "top_skills": [
@@ -77,13 +77,13 @@
       "preferred_jds": 1,
       "mentioned_jds": 0,
       "supporting_job_ids": [
-        "example-systems:123",
-        "example-cloud:456"
+        "example-cloud:456",
+        "example-systems:123"
       ]
     }
   ],
   "limitations": [
     "This is a fictional sample for contract review; URLs and digest are illustrative, not verified employer postings."
   ],
-  "content_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+  "content_digest": "148d83c6c1d887b9bbe94e0f719f745edbefd73298de4cc5780db231664bd91b"
 }
