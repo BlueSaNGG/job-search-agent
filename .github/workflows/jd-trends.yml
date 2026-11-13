@@ -31,6 +31,8 @@ jobs:
           node-version: 22
       - name: Install
         run: npm install --no-audit --no-fund
+      - name: Initialize optional local environment file
+        run: touch .env  # npm's --env-file=.env requires an existing file
       - name: Analyze encrypted daily artifacts
         env:
           JD_INTEL_KEY: ${{ secrets.JD_INTEL_KEY }}
