@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { existsSync, unlinkSync } from "node:fs";
 import type { DiscoveredJob } from "../src/core/discover/discover.ts";
-import { buildDailyArchive, chooseArchiveCandidates, decryptArchive, encryptArchive, extractSkillMentions, selectDailyTop } from "../src/node/jd-archive.ts";
+import { ARCHIVE_PATH, buildDailyArchive, chooseArchiveCandidates, decryptArchive, encryptArchive, extractSkillMentions, saveDailyArchive, selectDailyTop } from "../src/node/jd-archive.ts";
 import { filterScanMatches } from "../src/node/scan.ts";
 
 const DATE = "2026-11-12T20:00:00.000Z";
@@ -107,4 +108,23 @@ test("Archive selection is independent of mail seen-state and permits zero jobs"
   const empty = buildDailyArchive([], null, "2026-11-12", DATE, 56, 0, 0);
   assert.equal(empty.jobs.length, 0);
   assert.throws(() => buildDailyArchive([], null, "invalid", DATE, 56, 0, 0));
+});
+
+test("Archive ranking opt-out does not read resume or call Workers AI", async () => {
+  const before = process.env.JD_INTEL_KEY;
+  process.env.JD_INTEL_KEY = key;
+  let resumeLoads = 0;
+  try {
+    await saveDailyArchive(
+      [job("not-ranked")], { attempted: 56, failed: [] }, "2026-11-12",
+      async () => { resumeLoads++; throw new Error("Must not read resume"); },
+      new Date(DATE), false,
+    );
+    assert.equal(resumeLoads, 0);
+    assert.ok(existsSync(ARCHIVE_PATH));
+  } finally {
+    if (existsSync(ARCHIVE_PATH)) unlinkSync(ARCHIVE_PATH);
+    if (before === undefined) delete process.env.JD_INTEL_KEY;
+    else process.env.JD_INTEL_KEY = before;
+  }
 });
