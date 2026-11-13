@@ -81,7 +81,7 @@ function stable(a: DiscoveredJob, b: DiscoveredJob): number {
 
 /** Bounded job pool with stable IDs and company diversity before embeddings. */
 export function chooseArchiveCandidates(jobs: DiscoveredJob[], now = Date.now()): DiscoveredJob[] {
-  const minPosted = now - 15 * DAY_MS;
+  const minPosted = now - 14 * DAY_MS;
   const unique = new Map<string, DiscoveredJob>();
   for (const j of jobs) {
     const posted = j.postedAt ? Date.parse(j.postedAt) : NaN;
@@ -108,8 +108,14 @@ function comparableScore(j: DiscoveredJob, scores: Record<string, number>): numb
 /** Select up to 10, max two from an employer where enough other employers exist. */
 export function selectDailyTop(jobs: DiscoveredJob[], ranking: Ranking | null, limit = 10): DiscoveredJob[] {
   const scores = ranking?.scores ?? {};
-  const sorted = [...jobs].sort((a, b) =>
-    comparableScore(b, scores) - comparableScore(a, scores) || stable(a, b));
+  const sorted = [...jobs].sort((a, b) => {
+    const scoreDifference = comparableScore(b, scores) - comparableScore(a, scores);
+    if (scoreDifference) return scoreDifference;
+    // Scored ties follow the RFC's deterministic company/ID order. When
+    // ranking is unavailable, prioritize infra topics rather than alphabet.
+    if (!ranking) return stable(a, b) || a.company.localeCompare(b.company) || a.id.localeCompare(b.id);
+    return a.company.localeCompare(b.company) || a.id.localeCompare(b.id);
+  });
   const chosen: DiscoveredJob[] = [];
   const used = new Set<string>();
   const companies = new Map<string, number>();
