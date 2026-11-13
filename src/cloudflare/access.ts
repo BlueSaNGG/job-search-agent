@@ -31,7 +31,7 @@ export function normalizeTeamDomain(team: string): string {
   return `https://${host.includes(".") ? host : `${host}.cloudflareaccess.com`}`;
 }
 
-function b64urlBytes(s: string): Uint8Array {
+function b64urlBytes(s: string): Uint8Array<ArrayBuffer> {
   const b64 = s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4);
   const bin = atob(b64);
   const out = new Uint8Array(bin.length);
