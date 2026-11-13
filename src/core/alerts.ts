@@ -98,7 +98,12 @@ const MAJOR_US_METROS =
 
 function isMajorUsMetro(place: string): boolean {
   if (FOREIGN.test(place)) return false;
-  if (/\bremote\b/i.test(place) && /\b(?:US|USA|U\.S\.|United States)\b/i.test(place)) return true;
+  // A city name alone is ambiguous: "Cambridge, UK" is not Cambridge, MA.
+  const parts = place.split(",").map((p) => p.trim()).filter(Boolean);
+  const last = parts[parts.length - 1];
+  if (parts.length > 1 && /^[A-Z]{2,3}$/.test(last) &&
+      last !== "US" && last !== "USA" && !US_STATES.has(last)) return false;
+  if (/\bremote\b/i.test(place) && /\b(?:US|USA|United States)\b/i.test(place)) return true;
   return MAJOR_US_METROS.test(place);
 }
 
