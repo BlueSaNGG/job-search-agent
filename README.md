@@ -17,6 +17,8 @@ flowchart LR
 
 Job listings with a missing location or a Workday placeholder such as `2 Locations` remain candidates for manual location verification. The daily digest catches recently posted jobs (3-day default) rather than monitoring older postings indefinitely.
 
+**Design proposal:** [RFC 0001 — JD Intelligence](docs/rfcs/0001-jd-intelligence.md) defines a future Top-10 JD archive, skill extraction and weekly interview-prep handoff. This RFC is documentation only; no automation is enabled by the design PR.
+
 **Verify changes:** `npm test` and `npm run typecheck`. See `FORK_NOTES.md` for fork-specific behavior and security notes.
 
 **Company coverage:** 81 tracked companies; 56 have public ATS/custom readers, while 25 are manual-only. The eight latest Greenhouse/Ashby feeds are tested live in `.github/workflows/source-smoke.yml`. The company list is a watchlist, not a guarantee of better compensation or a match in every city.
