@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "week_id": "2026-W47",
+  "window": {
+    "from": "2026-11-02T00:00:00Z",
+    "to": "2026-11-16T00:00:00Z"
+  },
+  "generated_at": "2026-11-16T14:00:00Z",
+  "target_profile_version": "2026-11-v1",
+  "source_coverage": {
+    "configured_readable_companies": 56,
+    "companies_attempted": 56,
+    "companies_succeeded": 55,
+    "companies_failed": 1,
+    "sampled_jds": 2,
+    "sampled_companies": 2,
+    "ambiguous_location_jds": 0,
+    "missing_description_jds": 0
+  },
+  "jds": [
+    {
+      "id": "example-cloud:456",
+      "company_id": "example-cloud",
+      "company_name": "Example Cloud",
+      "title": "Developer Productivity Engineer",
+      "url": "https://example.com/jobs/456",
+      "location": "Chicago, Illinois, United States",
+      "location_status": "eligible",
+      "posted_at": "2026-11-11T10:00:00Z",
+      "first_seen_at": "2026-11-11T21:00:00Z",
+      "last_seen_at": "2026-11-15T21:00:00Z",
+      "description_status": "complete",
+      "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "job_fit_band": "medium",
+      "skills": [
+        {
+          "id": "build_systems",
+          "label": "Build systems",
+          "requirement": "preferred",
+          "section": "preferred",
+          "evidence": "Experience improving build performance is preferred"
+        }
+      ]
+    },
+    {
+      "id": "example-systems:123",
+      "company_id": "example-systems",
+      "company_name": "Example Systems",
+      "title": "Infrastructure Software Engineer",
+      "url": "https://example.com/jobs/123",
+      "location": "Shanghai, China",
+      "location_status": "eligible",
+      "posted_at": null,
+      "first_seen_at": "2026-11-12T03:00:00Z",
+      "last_seen_at": "2026-11-15T03:00:00Z",
+      "description_status": "complete",
+      "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "job_fit_band": "high",
+      "skills": [
+        {
+          "id": "build_systems",
+          "label": "Build systems",
+          "requirement": "required",
+          "section": "requirements",
+          "evidence": "Own the build and test infrastructure for engineering teams"
+        }
+      ]
+    }
+  ],
+  "top_skills": [
+    {
+      "id": "build_systems",
+      "label": "Build systems",
+      "distinct_jds": 2,
+      "distinct_companies": 2,
+      "required_jds": 1,
+      "preferred_jds": 1,
+      "mentioned_jds": 0,
+      "supporting_job_ids": [
+        "example-cloud:456",
+        "example-systems:123"
+      ]
+    }
+  ],
+  "limitations": [
+    "This is a fictional sample for contract review; URLs and digest are illustrative, not verified employer postings."
+  ],
+  "content_digest": "148d83c6c1d887b9bbe94e0f719f745edbefd73298de4cc5780db231664bd91b"
+}
