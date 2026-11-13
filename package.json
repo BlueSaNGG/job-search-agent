@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "local": "node --env-file=.env --import tsx src/node/server.ts",
-    "test": "node --import tsx --test test/core.test.ts test/classify.test.ts test/discover.test.ts test/sources.test.ts test/agent.test.ts test/demo.test.ts test/alerts.test.ts test/salary.test.ts test/jd-archive.test.ts",
+    "test": "node --import tsx --test test/core.test.ts test/classify.test.ts test/discover.test.ts test/sources.test.ts test/agent.test.ts test/demo.test.ts test/alerts.test.ts test/salary.test.ts test/jd-archive.test.ts test/jd-trends.test.ts",
     "check-companies": "node --import tsx src/node/check-companies.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "dev": "wrangler dev",
@@ -15,7 +15,8 @@
     "alerts": "node --env-file=.env --import tsx src/node/alerts.ts",
     "alerts:install": "node --env-file=.env --import tsx src/node/schedule.ts install",
     "alerts:uninstall": "node --env-file=.env --import tsx src/node/schedule.ts uninstall",
-    "jd-archive:view": "node --env-file=.env --import tsx src/node/view-jd-archive.ts"
+    "jd-archive:view": "node --env-file=.env --import tsx src/node/view-jd-archive.ts",
+    "jd-trends": "node --env-file=.env --import tsx src/node/jd-trends-cli.ts"
   },
   "dependencies": {
     "agents": "latest",
