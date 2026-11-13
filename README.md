@@ -17,7 +17,7 @@ flowchart LR
 
 Job listings with a missing location or a Workday placeholder such as `2 Locations` remain candidates for manual location verification. The daily digest catches recently posted jobs (3-day default) rather than monitoring older postings indefinitely.
 
-**Design proposal:** [RFC 0001 — JD Intelligence](docs/rfcs/0001-jd-intelligence.md) defines a future Top-10 JD archive, skill extraction and weekly interview-prep handoff. This RFC is documentation only; no automation is enabled by the design PR.
+**JD Archive MVP (opt-in):** [RFC 0001 — JD Intelligence](docs/rfcs/0001-jd-intelligence.md) defines the broader design. With a `JD_INTEL_KEY` secret (a unique random passphrase of at least 32 characters), the **same daily scan** also selects up to 10 unique infrastructure-relevant JDs and writes only a minimized AES-256-GCM encrypted artifact retained for 30 days by GitHub Actions. It does **not** commit JD archives or raw job descriptions to Git, and does not modify the email seen-state. The archive still runs when there are no new jobs to email. Without `JD_INTEL_KEY`, daily email is unchanged and archive creation is skipped. `--dry-run` and `--test-email` never write an archive. The artifact is private to repository Actions access; people with the secret can decrypt it. **Skill trend analysis and cross-repo PR creation are not yet implemented** (later PRs). To enable, add a GitHub Actions repository secret named `JD_INTEL_KEY` using a strong independently generated random passphrase.
 
 **Verify changes:** `npm test` and `npm run typecheck`. See `FORK_NOTES.md` for fork-specific behavior and security notes.
 
