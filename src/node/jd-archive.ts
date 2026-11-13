@@ -9,6 +9,29 @@ import { workersAiEmbed } from "./workers-ai.ts";
 const DAY_MS = 86_400_000;
 const MAGIC = Buffer.from("JDIA1");
 const MAX_POOL = 120;
+// Conservative vocabulary extraction. A hit means "mentioned", NOT "required"
+// or "mastered"; PR B will add section-aware required/preferred classification.
+const SKILL_PATTERNS: Array<[string, RegExp]> = [
+  ["ci_cd", /\bci\s*\/\s*cd\b|\bcontinuous integration\b|\bcontinuous delivery\b|\bjenkins\b/i],
+  ["build_systems", /\bbuild systems?\b|\bbuild infrastructure\b|\bbuild pipeline\b/i],
+  ["bazel", /\bbazel\b/i],
+  ["cmake", /\bcmake\b/i],
+  ["kubernetes", /\bkubernetes\b|\bk8s\b/i],
+  ["docker", /\bdocker\b|\bcontainerization\b/i],
+  ["python", /\bpython\b/i],
+  ["cpp", /\bc\+\+\b|\bcplusplus\b/i],
+  ["distributed_systems", /\bdistributed systems?\b/i],
+  ["terraform", /\bterraform\b|\binfrastructure as code\b/i],
+  ["observability", /\bobservability\b|\bprometheus\b|\bgrafana\b/i],
+  ["cloud_platforms", /\baws\b|\bgcp\b|\bazure\b/i],
+];
+
+/** Only bounded normalized labels, never JD body or quoted source sentences. */
+export function extractSkillMentions(description: string | undefined): string[] {
+  if (!description) return [];
+  return SKILL_PATTERNS.filter(([, pattern]) => pattern.test(description)).map(([id]) => id);
+}
+
 export const ARCHIVE_PATH = new URL("../../.data/jd-intelligence-slot.enc", import.meta.url);
 
 export interface DailyArchive {
@@ -35,6 +58,7 @@ export interface DailyArchive {
     observed_at: string;
     description_status: "complete" | "partial" | "unavailable";
     content_hash: string;
+    skill_mentions: string[]; // unverified mentions; no requirement claims in Phase A
     similarity: number | null;
   }>;
 }
@@ -135,6 +159,7 @@ export function buildDailyArchive(
         observed_at: observedAt,
         description_status: !j.description ? "unavailable" : j.description.length >= 4000 ? "partial" : "complete",
         content_hash: createHash("sha256").update(observedText, "utf8").digest("hex"),
+        skill_mentions: extractSkillMentions(j.description),
         similarity: ranking && Number.isFinite(ranking.scores[j.id]) ? ranking.scores[j.id] : null,
       };
     }),
