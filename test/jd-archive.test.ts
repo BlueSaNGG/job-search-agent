@@ -43,6 +43,31 @@ test("candidate pool deduplicates by stable ID, keeps undated, drops stale dated
   assert.deepEqual(pool.map(j => j.id).sort(), ["a:new", "c:undated"]);
 });
 
+test("archive candidate window includes exactly 14 days, but not older posts", () => {
+  const now = Date.parse(DATE);
+  const boundary = new Date(now - 14 * 86_400_000).toISOString();
+  const older = new Date(now - 14 * 86_400_000 - 1).toISOString();
+  const chosen = chooseArchiveCandidates([
+    job("on-boundary", "b", { postedAt: boundary }),
+    job("older", "c", { postedAt: older }),
+  ], now);
+  assert.deepEqual(chosen.map(x => x.id), ["b:on-boundary"]);
+});
+
+test("scored ties use company then ID, while unranked fallback prioritizes infra", () => {
+  const roles = [
+    job("z", "zebra", { title: "Developer Productivity Engineer" }),
+    job("b", "alpha", { title: "General Software Engineer" }),
+    job("a", "alpha", { title: "General Software Engineer" }),
+  ];
+  const scores = Object.fromEntries(roles.map(x => [x.id, 80]));
+  assert.deepEqual(
+    selectDailyTop(roles, { scores, notes: {} }).map(x => x.id),
+    ["alpha:a", "alpha:b", "zebra:z"],
+  );
+  assert.equal(selectDailyTop(roles, null)[0].id, "zebra:z");
+});
+
 test("Top 10 shortlist favors scored matching roles and company diversity", () => {
   const jobs = [
     ...Array.from({ length: 8 }, (_, i) => job("a" + i, "a")),
