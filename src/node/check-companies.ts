@@ -44,3 +44,6 @@ if (manual.length) {
   for (const m of manual) console.log(`  ${m}`);
 }
 console.log("\nTip: check just a few with  npm run check-companies -- microsoft apple");
+
+// A failed live board check must fail CI rather than being reported as a success.
+if (broken > 0) process.exitCode = 1;
