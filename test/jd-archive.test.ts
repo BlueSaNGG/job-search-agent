@@ -1,0 +1,100 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import type { DiscoveredJob } from "../src/core/discover/discover.ts";
+import { buildDailyArchive, chooseArchiveCandidates, decryptArchive, encryptArchive, selectDailyTop } from "../src/node/jd-archive.ts";
+import { filterScanMatches } from "../src/node/scan.ts";
+
+const DATE = "2026-11-12T20:00:00.000Z";
+const key = "unit-test-example-long-passphrase-keep-out-of-production";
+function job(id: string, company = "a", opts: Partial<DiscoveredJob> = {}): DiscoveredJob {
+  return {
+    id: company + ":" + id,
+    externalId: id,
+    company, companyName: company,
+    title: "Software Engineer, Infrastructure",
+    location: "Chicago, IL",
+    url: "https://example.com/job/" + id,
+    category: "SWE", level: "maybe", reasons: ["infrastructure"],
+    firstSeen: DATE,
+    postedAt: "2026-11-10T00:00:00.000Z",
+    description: "Own Kubernetes and CI pipelines. Full JD content is never persisted.",
+    ...opts,
+  };
+}
+
+test("shared scan filtering preserves experienced US/China jobs", () => {
+  const jobs = [
+    job("us"), job("cn", "b", { location: "Shanghai, China" }),
+    job("entry", "c", { level: "entry" }),
+    job("outside", "d", { location: "Bengaluru, India" }),
+  ];
+  const result = filterScanMatches(jobs, ["US_MAJOR_METROS", "Shanghai", "Hangzhou"], 0);
+  assert.deepEqual(result.relevant.map(j => j.id), ["a:us", "b:cn"]);
+  assert.equal(result.underpaid.length, 0);
+});
+
+test("candidate pool deduplicates by stable ID, keeps undated, drops stale dated", () => {
+  const jobs = [
+    job("new"), job("new"), job("old", "b", { postedAt: "2026-09-01T00:00:00Z" }),
+    job("undated", "c", { postedAt: undefined }),
+  ];
+  const pool = chooseArchiveCandidates(jobs, Date.parse(DATE));
+  assert.deepEqual(pool.map(j => j.id).sort(), ["a:new", "c:undated"]);
+});
+
+test("Top 10 shortlist favors scored matching roles and company diversity", () => {
+  const jobs = [
+    ...Array.from({ length: 8 }, (_, i) => job("a" + i, "a")),
+    ...Array.from({ length: 8 }, (_, i) => job("b" + i, "b")),
+    ...Array.from({ length: 8 }, (_, i) => job("c" + i, "c")),
+    ...Array.from({ length: 8 }, (_, i) => job("d" + i, "d")),
+    ...Array.from({ length: 8 }, (_, i) => job("e" + i, "e")),
+  ];
+  const scores = Object.fromEntries(jobs.map((j, i) => [j.id, 99 - i]));
+  const selected = selectDailyTop(jobs, { scores, notes: {} }, 10);
+  assert.equal(selected.length, 10);
+  assert.equal(new Set(selected.map(x => x.id)).size, 10);
+  assert.equal(new Set(selected.map(x => x.company)).size, 5);
+  for (const company of ["a", "b", "c", "d", "e"])
+    assert.equal(selected.filter(x => x.company === company).length, 2);
+});
+
+test("Daily Archive contains metadata and version hashes, never full JD text or resume", () => {
+  const jobs = [job("x", "a", { location: "2 Locations" })];
+  const archive = buildDailyArchive(jobs, null, "2026-11-12", DATE, 56, 1, 1);
+  assert.equal(archive.source_coverage.saved, 1);
+  assert.equal(archive.ranking_method, "unranked");
+  assert.equal(archive.jobs[0].similarity, null);
+  assert.equal(archive.jobs[0].location_status, "needs_review");
+  assert.match(archive.jobs[0].content_hash, /^[a-f0-9]{64}$/);
+  assert.equal(JSON.stringify(archive).includes("Own Kubernetes"), false);
+  const changed = buildDailyArchive(
+    [job("x", "a", { description: "A changed JD" })], null, "2026-11-12", DATE, 56, 0, 1,
+  );
+  assert.notEqual(changed.jobs[0].content_hash, archive.jobs[0].content_hash);
+});
+
+test("AES-GCM ciphertext round-trips, uses randomized nonces and detects tampering", () => {
+  const archive = buildDailyArchive([job("x")], null, "2026-11-12", DATE, 56, 0, 1);
+  const x = encryptArchive(archive, key);
+  const y = encryptArchive(archive, key);
+  assert.notDeepEqual(x, y);
+  assert.equal(x.includes(Buffer.from("Software Engineer")), false);
+  assert.deepEqual(decryptArchive(x, key), archive);
+  assert.throws(() => decryptArchive(x, "wrong-passphrase-wrong-passphrase-wrong"), /authenticate|Unsupported state|bad decrypt/i);
+  const corrupted = Buffer.from(x);
+  corrupted[corrupted.length - 1] ^= 1;
+  assert.throws(() => decryptArchive(corrupted, key));
+  assert.throws(() => encryptArchive(archive, "short"));
+});
+
+test("Archive selection is independent of mail seen-state and permits zero jobs", () => {
+  const recent = job("same-previously-emailed");
+  const pool = chooseArchiveCandidates([recent], Date.parse(DATE));
+  const archive = buildDailyArchive(pool, { scores: { [recent.id]: 88 }, notes: {} }, "2026-11-12", DATE, 56, 0, 1);
+  assert.equal(archive.jobs[0].similarity, 88);
+  assert.equal(archive.ranking_method, "resume_embedding");
+  const empty = buildDailyArchive([], null, "2026-11-12", DATE, 56, 0, 0);
+  assert.equal(empty.jobs.length, 0);
+  assert.throws(() => buildDailyArchive([], null, "invalid", DATE, 56, 0, 0));
+});
