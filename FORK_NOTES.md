@@ -12,14 +12,24 @@ one specific posting.
 
 ## What is configured in this fork (GitHub Actions variables, not secrets)
 
-- `ALERT_LOCATIONS`: `China, Shanghai, Beijing, United States, USA, US`
-  (upstream default was US only)
+- `ALERT_TARGET_LOCATIONS`: `US_MAJOR_METROS, Shanghai, Hangzhou` (scheduled workflow default).
+  Covers major US cities and explicitly US-remote roles; Chinese roles only from Shanghai/Hangzhou,
+  not Beijing or other cities. An older `ALERT_LOCATIONS` repo variable is deliberately ignored;
+  use `ALERT_TARGET_LOCATIONS` to customize. Missing or count-only locations (e.g.
+  `2 Locations`) remain candidates for manual location verification.
 - `ALERT_MIN_SALARY`: `0` (off; upstream default was $110,000 USD, which
   makes little sense for China postings and drops stated-pay roles)
 - `ALERT_MAX_AGE_DAYS`: left at the upstream default `3`
 - Daily run: 19:00 Chicago time, via `.github/workflows/alerts.yml`
 
 ## Code changes vs upstream
+
+- Fixed mixed US/China location filtering; selected Chinese cities no longer get
+  rejected just because the US filter is active. `US_MAJOR_METROS` includes US-based
+  remote jobs and major metropolitan areas; tests cover city limits and Chinese aliases.
+- Experienced-mode queries now include platform, infrastructure, and build engineers;
+  classification recognizes those titles.
+- Pull request CI checks run `npm test` and `npm run typecheck`.
 
 - `src/core/alerts.ts` `filterByLocation`: Workday postings listed as
   "2 Locations" (no place names in the list view) are now kept instead of
