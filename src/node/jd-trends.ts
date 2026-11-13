@@ -234,7 +234,7 @@ export function buildTrendReport(
   const skillNames = new Set([...previousCounts.keys(), ...recentCounts.keys(), ...statuses.keys()]);
   const skills: SkillStat[] = [...skillNames].map(id => {
     const p = previousCounts.get(id)?.size ?? 0, r = recentCounts.get(id)?.size ?? 0;
-    const byJob = statuses.get(id) ?? new Map();
+    const byJob = statuses.get(id) ?? new Map<string, { company: string; requirement: SkillRequirement }>();
     const distribution = { required: 0, preferred: 0, mentioned: 0 };
     const companies = new Set<string>();
     for (const item of byJob.values()) {
