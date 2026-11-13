@@ -144,7 +144,8 @@ async function main() {
     const part = (name: string) => slotParts.find(x => x.type === name)?.value ?? "";
     const slot = process.env.JD_INTEL_SLOT || (part("year") + "-" + part("month") + "-" + part("day"));
     try {
-      await saveDailyArchive(relevant, scan, slot, loadResume, started);
+      await saveDailyArchive(relevant, scan, slot, loadResume, started,
+        !args.has("--no-rank") && process.env.ALERT_RANKING !== "off");
     } catch (err) {
       console.log("JD Archive degraded (email unaffected): " + (err as Error).message);
     }
