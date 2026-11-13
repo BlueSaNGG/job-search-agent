@@ -244,3 +244,30 @@ test("Actions integration selects newest successful decryptable slot; never forw
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("GitHub artifact listing paginates fully before reporting missing evidence", async () => {
+  let pages = 0;
+  const noResult = Array.from({ length: 100 }, (_, i) => ({
+    id: 10000 + i, name: "unrelated-smoke-test-" + i, expired: false,
+    created_at: "2026-11-16T00:00:00Z", size_in_bytes: 1000,
+    workflow_run: { id: 10000 + i },
+  }));
+  const fakeFetch: typeof fetch = async (input) => {
+    const url = String(input);
+    const match = /\/actions\/artifacts\?per_page=100&page=(\d+)$/.exec(url);
+    assert.ok(match, "no artifact downloads or workflow run API calls expected");
+    pages++;
+    const page = Number(match![1]);
+    return new Response(JSON.stringify({
+      total_count: 101, artifacts: page === 1 ? noResult : [{
+        id: 10101, name: "other-workflow-output", expired: false,
+        created_at: "2026-11-16T00:00:00Z", size_in_bytes: 1000,
+        workflow_run: { id: 10101 },
+      }],
+    }), { status: 200 });
+  };
+  const result = await readRecentArtifacts(END, "fake-gh-token", "long-secret-key-more-than-32-character-string", fakeFetch);
+  assert.equal(pages, 2);
+  assert.equal(result.available_slots, 0);
+  assert.equal(buildTrendReport(result.archives, END).status, "insufficient_evidence");
+});
