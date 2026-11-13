@@ -1,0 +1,328 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BlueSaNGG/job-search-agent/blob/main/docs/rfcs/schema/weekly-handoff.v1.schema.json",
+  "title": "JD Intelligence -> Interview Prep weekly sanitized handoff v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "week_id",
+    "window",
+    "generated_at",
+    "target_profile_version",
+    "source_coverage",
+    "jds",
+    "top_skills",
+    "limitations",
+    "content_digest"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "week_id": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-W(0[1-9]|[1-4][0-9]|5[0-3])$"
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "to": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "target_profile_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+    },
+    "source_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "configured_readable_companies",
+        "companies_attempted",
+        "companies_succeeded",
+        "companies_failed",
+        "sampled_jds",
+        "sampled_companies",
+        "ambiguous_location_jds",
+        "missing_description_jds"
+      ],
+      "properties": {
+        "configured_readable_companies": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "companies_attempted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "companies_succeeded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "companies_failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sampled_jds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sampled_companies": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ambiguous_location_jds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_description_jds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "jds": {
+      "type": "array",
+      "maxItems": 140,
+      "items": {
+        "$ref": "#/$defs/job"
+      }
+    },
+    "top_skills": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/skill_count"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "string",
+        "maxLength": 320
+      }
+    },
+    "content_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "$defs": {
+    "skill_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "requirement",
+        "section",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "requirement": {
+          "enum": [
+            "required",
+            "preferred",
+            "mentioned"
+          ]
+        },
+        "section": {
+          "enum": [
+            "requirements",
+            "preferred",
+            "responsibilities",
+            "other"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        }
+      }
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "company_id",
+        "company_name",
+        "title",
+        "url",
+        "location",
+        "location_status",
+        "posted_at",
+        "first_seen_at",
+        "last_seen_at",
+        "description_status",
+        "content_hash",
+        "job_fit_band",
+        "skills"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 240
+        },
+        "company_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90
+        },
+        "company_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "location": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "location_status": {
+          "enum": [
+            "eligible",
+            "needs_review"
+          ]
+        },
+        "posted_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "first_seen_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_seen_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description_status": {
+          "enum": [
+            "complete",
+            "partial",
+            "unavailable"
+          ]
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "job_fit_band": {
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            "unknown"
+          ]
+        },
+        "skills": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/skill_evidence"
+          }
+        }
+      }
+    },
+    "skill_count": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "distinct_jds",
+        "distinct_companies",
+        "required_jds",
+        "preferred_jds",
+        "mentioned_jds",
+        "supporting_job_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "distinct_jds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "distinct_companies": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_jds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "preferred_jds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mentioned_jds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supporting_job_ids": {
+          "type": "array",
+          "maxItems": 140,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
