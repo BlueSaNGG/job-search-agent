@@ -92,6 +92,16 @@ const FOREIGN =
   /\b(india|canada|united kingdom|england|scotland|ireland|germany|france|netherlands|spain|portugal|poland|switzerland|sweden|denmark|norway|finland|israel|singapore|japan|china|hong kong|taiwan|korea|australia|new zealand|brazil|mexico|argentina|colombia|chile|philippines|vietnam|indonesia|malaysia|thailand|uae|united arab emirates|saudi arabia|egypt|nigeria|kenya|south africa|romania|czech|serbia|ukraine|turkey|italy|belgium|austria|luxembourg|estonia|lithuania|latvia|greece|hungary|costa rica|uruguay|peru)\b|\b(bengaluru|bangalore|hyderabad|pune|mumbai|chennai|gurgaon|gurugram|noida|new delhi|delhi|kolkata|ahmedabad|toronto|vancouver|montreal|ottawa|waterloo|london|dublin|berlin|munich|paris|amsterdam|tel aviv|tokyo|sydney|melbourne|sao paulo|são paulo|mexico city|warsaw|krakow|bucharest|zurich|stockholm|copenhagen|aarhus|barcelona|madrid|lisbon|seoul|shanghai|beijing|shenzhen|manila)\b/i;
 const escRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+/** Config token: US_MAJOR_METROS. Major US metropolitan centers and tech hubs. */
+const MAJOR_US_METROS =
+  /\b(?:new york|new york city|brooklyn|queens|jersey city|newark|hoboken|san francisco|bay area|san jose|santa clara|sunnyvale|mountain view|palo alto|menlo park|redwood city|san mateo|cupertino|oakland|berkeley|fremont|seattle|bellevue|redmond|tacoma|chicago|evanston|boston|cambridge|somerville|los angeles|santa monica|culver city|irvine|anaheim|pasadena|long beach|san diego|washington(?: d\.?c\.?)?|arlington|alexandria|reston|tysons|ashburn|austin|round rock|dallas|plano|frisco|fort worth|houston|san antonio|atlanta|alpharetta|miami|fort lauderdale|orlando|tampa|st\.? petersburg|denver|boulder|portland|phoenix|tempe|scottsdale|salt lake city|provo|philadelphia|pittsburgh|minneapolis|st\.? paul|raleigh|durham|cary|research triangle|charlotte|nashville|detroit|ann arbor|columbus|indianapolis|baltimore|st\.? louis|kansas city|madison|milwaukee|sacramento|las vegas|richmond|san juan)\b/i;
+
+function isMajorUsMetro(place: string): boolean {
+  if (FOREIGN.test(place)) return false;
+  if (/\bremote\b/i.test(place) && /\b(?:US|USA|U\.S\.|United States)\b/i.test(place)) return true;
+  return MAJOR_US_METROS.test(place);
+}
+
 /** A location string may list several places: "Bengaluru, India; Seattle, WA". */
 function places(location: string): string[] {
   return location.split(/;|\||\n|\s\/\s|\s+or\s+/i).map((p) => p.trim()).filter(Boolean);
@@ -124,17 +134,27 @@ function looksUs(place: string): boolean {
 export function filterByLocation(jobs: DiscoveredJob[], keywords: string[]): DiscoveredJob[] {
   const keys = keywords.map((k) => k.trim().toLowerCase()).filter(Boolean);
   if (!keys.length) return jobs;
-  const res = keys.map((k) => new RegExp(`(^|[^a-z0-9])${escRe(k)}(?![a-z0-9])`, "i"));
-  const wantsUs = keys.some((k) => US_KEYS.has(k));
+  const wantsMajorUs = keys.includes("us_major_metros");
+  const simpleKeys = keys.filter((k) => k !== "us_major_metros");
+  const res = simpleKeys.map((k) => new RegExp("(^|[^a-z0-9])" + escRe(k) + "(?![a-z0-9])", "i"));
+  const wantsUs = simpleKeys.some((k) => US_KEYS.has(k));
+
   return jobs.filter((j) => {
     const loc = j.location.trim();
     if (!loc) return true;
-    // Workday lists multi-location postings as "2 Locations" with no place
-    // names; the detail page has the real locations, so don't drop them here.
+    // Workday's "2 Locations" contains no city names: keep for manual verification.
     if (/^\d+\s+locations?$/i.test(loc)) return true;
     return places(loc).some((p) => {
-      // Keyword hits only count for the place they're in; "IN" in "Bengaluru, KA, IN" is not "US".
-      if (res.some((re) => re.test(p))) return !(wantsUs && FOREIGN.test(p) && !/\b(usa|united states)\b/i.test(p));
+      if (wantsMajorUs && isMajorUsMetro(p)) return true;
+      const matchedKeys = simpleKeys.filter((key, i) =>
+        res[i].test(p) ||
+        (key === "shanghai" && /上海/.test(p)) ||
+        (key === "hangzhou" && /杭州/.test(p))
+      );
+      // An explicitly requested Chinese city must not be rejected just because
+      // a US filter is also configured.
+      if (matchedKeys.some((key) => !US_KEYS.has(key))) return true;
+      if (matchedKeys.length) return !FOREIGN.test(p) || /\b(?:usa|united states)\b/i.test(p);
       return wantsUs && looksUs(p);
     });
   });
