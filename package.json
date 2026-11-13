@@ -14,7 +14,8 @@
     "push-demo": "node --env-file=.env --import tsx src/node/push-demo.ts",
     "alerts": "node --env-file=.env --import tsx src/node/alerts.ts",
     "alerts:install": "node --env-file=.env --import tsx src/node/schedule.ts install",
-    "alerts:uninstall": "node --env-file=.env --import tsx src/node/schedule.ts uninstall"
+    "alerts:uninstall": "node --env-file=.env --import tsx src/node/schedule.ts uninstall",
+    "jd-archive:view": "node --env-file=.env --import tsx src/node/view-jd-archive.ts"
   },
   "dependencies": {
     "agents": "latest",
