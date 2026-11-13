@@ -14,8 +14,8 @@ one specific posting.
 
 - `ALERT_TARGET_LOCATIONS`: `US_MAJOR_METROS, Shanghai, Hangzhou` (scheduled workflow default).
   Covers major US cities and explicitly US-remote roles; Chinese roles only from Shanghai/Hangzhou,
-  not Beijing or other cities. An older `ALERT_LOCATIONS` repo variable is deliberately ignored;
-  use `ALERT_TARGET_LOCATIONS` to customize. Missing or count-only locations (e.g.
+  not Beijing or other cities. The old `ALERT_LOCATIONS` repo variable was removed
+  in the 2026-11-12 cleanup; use `ALERT_TARGET_LOCATIONS` to customize. Missing or count-only locations (e.g.
   `2 Locations`) remain candidates for manual location verification.
 - `ALERT_MIN_SALARY`: `0` (off; upstream default was $110,000 USD, which
   makes little sense for China postings and drops stated-pay roles)

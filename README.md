@@ -13,7 +13,7 @@ flowchart LR
 
 **Stack:** TypeScript · Node · Cloudflare Workers AI · GitHub Actions · automated tests
 
-**Target locations:** major US metros (including US-based remote jobs); in China, **Shanghai and Hangzhou only**. The scheduled workflow uses `ALERT_TARGET_LOCATIONS=US_MAJOR_METROS, Shanghai, Hangzhou` by default. An older `ALERT_LOCATIONS` repository variable does not control the scheduled job. Update `ALERT_TARGET_LOCATIONS` to customize.
+**Target locations:** major US metros (including US-based remote jobs); in China, **Shanghai and Hangzhou only**. The scheduled workflow uses `ALERT_TARGET_LOCATIONS=US_MAJOR_METROS, Shanghai, Hangzhou` by default. The old `ALERT_LOCATIONS` repository variable was removed in the 2026-11-12 cleanup. Update `ALERT_TARGET_LOCATIONS` to customize.
 
 Job listings with a missing location or a Workday placeholder such as `2 Locations` remain candidates for manual location verification. The daily digest catches recently posted jobs (3-day default) rather than monitoring older postings indefinitely.
 
