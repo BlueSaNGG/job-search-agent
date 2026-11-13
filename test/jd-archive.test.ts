@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { DiscoveredJob } from "../src/core/discover/discover.ts";
-import { buildDailyArchive, chooseArchiveCandidates, decryptArchive, encryptArchive, selectDailyTop } from "../src/node/jd-archive.ts";
+import { buildDailyArchive, chooseArchiveCandidates, decryptArchive, encryptArchive, extractSkillMentions, selectDailyTop } from "../src/node/jd-archive.ts";
 import { filterScanMatches } from "../src/node/scan.ts";
 
 const DATE = "2026-11-12T20:00:00.000Z";
@@ -86,6 +86,16 @@ test("AES-GCM ciphertext round-trips, uses randomized nonces and detects tamperi
   corrupted[corrupted.length - 1] ^= 1;
   assert.throws(() => decryptArchive(corrupted, key));
   assert.throws(() => encryptArchive(archive, "short"));
+});
+
+test("Skill mentions are normalized, bounded and do not imply required status", () => {
+  const labels = extractSkillMentions("Build systems using Bazel, Kubernetes, Python and CI/CD.");
+  assert.deepEqual(labels, ["ci_cd", "build_systems", "bazel", "kubernetes", "python"]);
+  const archive = buildDailyArchive([job("skills", "a", {
+    description: "Bazel build infrastructure with Kubernetes",
+  })], null, "2026-11-12", DATE, 56, 0, 1);
+  assert.deepEqual(archive.jobs[0].skill_mentions, ["build_systems", "bazel", "kubernetes"]);
+  assert.equal(JSON.stringify(archive).includes("build infrastructure with"), false);
 });
 
 test("Archive selection is independent of mail seen-state and permits zero jobs", () => {
