@@ -145,7 +145,7 @@ The public profile should store **no personal salary or current PayPal compensat
 
 Job quality cannot be estimated with Job Fit alone. Show separate `job_fit`, `prep_value` and `career_upside_status` fields in **private** outputs; public weekly exports use only coarse fit bands and job/skill evidence. If a user changes target regions, update the source profile version and define a separate migration for downstream filters.
 
-## 6A. Data quality, sample validity and acceptance thresholds
+## 5B. Data quality, sample validity and acceptance thresholds
 
 A successful HTTP response is insufficient proof of a healthy board. Each scan manifest must report per-source: response/status, number listed, number matched, missing-location count, missing/partial-description count, duration, last-success date and the preceding healthy baseline. Alert on **zero jobs or an anomalous drop** only when compared with a historical baseline, not on a hard-coded universal count. Surface partial source availability in email/weekly reporting; never interpret missing jobs as zero demand.
 
