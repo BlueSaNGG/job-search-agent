@@ -1,0 +1,59 @@
+# Read-only weekly analysis of up to 14 completed Chicago daily archives.
+# Does not crawl hiring websites, write Git, email anyone or open PRs.
+name: JD Intelligence weekly trends
+
+on:
+  schedule:
+    - cron: '37 15 * * 1' # Monday, after Sunday's 7pm Chicago Job alerts
+  workflow_dispatch:
+    inputs:
+      end_slot:
+        description: 'Last Chicago daily slot YYYY-MM-DD (empty = previous Chicago date)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: jd-trends-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Initialize optional local environment file
+        run: touch .env  # npm's --env-file=.env requires an existing file
+      - name: Analyze encrypted daily artifacts
+        env:
+          JD_INTEL_KEY: ${{ secrets.JD_INTEL_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+          END_SLOT: ${{ inputs.end_slot }}
+        run: |
+          if [ -n "$END_SLOT" ]; then
+            npm run jd-trends -- --github --end-slot "$END_SLOT"
+          else
+            npm run jd-trends -- --github
+          fi
+      - name: Upload sanitized report (no resume, no raw JD)
+        uses: actions/upload-artifact@v4
+        with:
+          name: jd-trends-summary
+          path: |
+            .data/jd-trends-summary.json
+            .data/jd-trends-summary.md
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
+      - name: Cleanup
+        if: always()
+        run: rm -f .data/jd-trends-summary.json .data/jd-trends-summary.md

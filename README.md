@@ -21,6 +21,8 @@ Job listings with a missing location or a Workday placeholder such as `2 Locatio
 
 **查看加密归档：** 在 GitHub Actions 的每日 Job alerts run 下载名为 `jd-intelligence-YYYY-MM-DD` 的 Artifact，解压后得到 `jd-intelligence-slot.enc`。在你自己的电脑上，`.env` 配置同一个 `JD_INTEL_KEY`，执行 `npm run jd-archive:view -- /path/to/jd-intelligence-slot.enc`。命令仅在本地输出 Top 10 职位、相对匹配分数、地点和有限的技术关键词；**不要在公开 Actions 日志中运行解密命令**。当前关键词仅代表 JD 中提及，并不声称是 Required Qualifications；更精确的 Required/Preferred 分析属于后续 PR B。
 
+**14-day skill intelligence (Phase B):** The [JD Trends guide](docs/jd-trends.md) explains the read-only weekly analysis of encrypted Actions artifacts. Until ~14 valid daily slots exist, the result is `insufficient_evidence`, not a market-demand conclusion. Weekly summaries aggregate distinct selected JDs and companies only; no raw JD/resume or individual fit scores leave the private archive.
+
 **Verify changes:** `npm test` and `npm run typecheck`. See `FORK_NOTES.md` for fork-specific behavior and security notes.
 
 **Company coverage:** 81 tracked companies; 56 have public ATS/custom readers, while 25 are manual-only. The eight latest Greenhouse/Ashby feeds are tested live in `.github/workflows/source-smoke.yml`. The company list is a watchlist, not a guarantee of better compensation or a match in every city.
