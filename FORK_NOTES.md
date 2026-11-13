@@ -2,8 +2,9 @@
 
 Forked from tianna0/job-search-agent. Upstream is a daily watcher for
 **newly posted entry-level software roles**. This fork is changed to an
-**experienced mode**: it watches newly posted software roles across the
-same ~40 companies, including Senior titles and JDs asking for 3+ years.
+**experienced mode**: it watches newly posted software roles across
+62 companies (upstream had 40), including Senior titles and JDs asking
+for 3+ years.
 Entry-level roles are not emailed at all: classification still labels
 them, but the pipeline drops them before ranking, so the daily email
 contains only Maybe (experienced) roles. It is still not a tracker for
@@ -33,6 +34,28 @@ one specific posting.
     `test/discover.test.ts`, and `test/sources.test.ts` (Apple).
   - Email wording updated accordingly (`src/core/alerts.ts`,
     `src/core/chat.ts`): "SWE jobs", not "Entry-level SWE jobs".
+- 22 more companies added in `src/core/discover/companies.ts`
+  (2026-11-12; verified with `npm run check-companies`, counts below
+  are from that run). 12 are auto-read; 10 are listed as manual-only
+  because their careers sites have no readable board on a supported
+  ATS (Greenhouse / Lever / Ashby / Workday) — they still show in the
+  tracker and jobs can be added via the bookmarklet or a pasted link.
+  - Auto-read: MongoDB (Greenhouse, 386 listed / 50 match), Dropbox
+    (Greenhouse, 42 / 7), Intel (Workday, 111 / 11), CoreWeave
+    (Greenhouse, 304 / 31), Vercel (Greenhouse, 87 / 14), Linear
+    (Ashby, 33 / 0), Jane Street (Greenhouse, 217 / 15), Workday
+    (Workday, 105 / 26), Broadcom (Workday, 147 / 11), Micron
+    (Workday, 293 / 14), ASML (Workday, 190 / 14), Notion (Ashby,
+    160 / 14).
+  - Manual-only: AMD (Phenom), Intuit (Avature), Texas Instruments
+    (Oracle Recruiting), Two Sigma (iCIMS), Qualcomm (Workday API
+    returns HTTP 422 on wd5; wd12 mirror returns no jobs),
+    ServiceNow, Atlassian, CrowdStrike, Zoom, Shopify (no public
+    board on any supported ATS; Greenhouse, Lever, and Ashby all
+    checked and 404).
+  - `test/discover.test.ts` company-count assertion updated 40 → 62,
+    and the chat assistant's "about 40 companies" line in
+    `src/core/chat.ts` updated to "about 60".
 
 ## What this watcher will NOT do — read before relying on it
 
