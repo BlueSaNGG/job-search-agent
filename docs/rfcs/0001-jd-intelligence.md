@@ -32,7 +32,7 @@ flowchart TD
   C --> F["Intelligence branch: recent + active candidate pool"]
   F --> G["Extract required/preferred skills + evidence"]
   G --> H["Job Fit and Prep Value; Top 10 daily"]
-  H --> I["Encrypted rolling archive (30 days)"]
+  H --> I["Per-slot encrypted Actions artifact (30-day expiry)"]
   I --> J["14-day weekly trends + provenance"]
   J --> K["Sanitized versioned handoff"]
   K --> L["Interview-prep proposal PR (later phase)"]
@@ -127,13 +127,15 @@ The job-search repository must not mutate interview-prep. In v1 `prep_value` may
 
 ## 5. Persistence and privacy
 
-**Decision: keep daily state encrypted; publish only sanitized weekly evidence.**
+**Decision: store each day’s minimized, encrypted observations as a separately expiring GitHub Actions artifact, never as a Git-tracked archive. Publish only sanitized weekly evidence.**
 
-- Store a rolling 30-day, deduplicated set and daily manifests at `.data/jd-intelligence/state.v1.enc`, **encrypted before committing**. Never add plaintext `.data/jd-intelligence/*.json` to Git, including logs, Actions artifacts or PR attachments.
+- For each Chicago daily slot, create a **separate minimized encrypted observation bundle** and daily manifest (e.g. `jd-intelligence-2026-11-12.v1.enc`) and upload it using `actions/upload-artifact@v4` with `retention-days: 30`. **Never commit daily JD archives to Git.** The temporary plaintext JSON exists only inside the runner working directory with restrictive permissions, is removed before job completion, and must never be uploaded, added to Git, or logged. Artifact contents are ciphertext only.
+- Read the prior <=30 daily artifacts via GitHub Actions artifact APIs (explicit `actions: read` permission) to build a rolling view and a 14-day weekly sample. Do not copy old observations into newer artifacts merely for rolling storage: repeating their bytes in today's artifact would extend their effective retention. De-duplicate and aggregate in memory. A same-slot rerun may produce multiple artifact runs; select the newest **successful, schema-valid** artifact per slot deterministically and report superseded duplicates.
+- Enforce the 30-day artifact lifecycle via GitHub's configured artifact expiry and test that an older artifact cannot be used for current evidence. This is a platform retention policy, **not a guarantee of immediate physical erasure or legal-grade deletion**; use a dedicated lifecycle-controlled private data store instead if strict deletion attestations become a requirement. Old artifacts must not be accessible as Git commits or long-lived Actions artifacts. The only durable Git output is the minimized, human-reviewable weekly report. Keep the **existing** `.data/alerts-seen.json.enc` email dedup state unchanged; it is a separate legacy function and is not part of JD retention.
 - Use a dedicated `JD_INTEL_KEY` repository secret for Node AES-256-GCM with unique nonce and versioned envelope; reject missing/invalid keys. Reusing the existing `STATE_KEY` requires a separately documented HKDF context and must not reuse an IV. Do not copy existing legacy CBC encryption without authentication.
 - Save only minimal job metadata, scores, short skill paraphrases, and content hashes. Resume is loaded in memory only; serialize neither resumes nor prompt/response traces.
 - Weekly handoff may include public URLs, aggregated skills, no personal resume text and no confidential PayPal engineering details. Before creating a public PR, apply an allowlist of fields and validate output for secrets/private info.
-- Prune rolling records older than 30 days and keep no more than the configured capped population. Keep only sanitized weekly reports long-term. Logs show aggregate counts/errors, not JD bodies, resume or sensitive tokens.
+- Retain each daily artifact for at most the configured 30-day lifecycle (subject to GitHub's deletion behavior); the 14-day report always filters by observed slot and real source dates where present. Query only within that window and cap result counts. Only sanitized weekly reports may remain in Git long-term; their public links and derived skill evidence are **intentionally durable**, and this is disclosed separately from daily private retention. Logs show aggregate counts/errors, not JD bodies, resume or sensitive tokens.
 - If encryption or persistence fails, the alert email flow still works. Mark the intelligence run degraded, do not claim a successful archive, and skip downstream weekly PR generation if there is no trustworthy source state.
 
 
@@ -156,12 +158,12 @@ Each skill-analysis run must expose provenance completeness, counts of distinct 
 ## 6. Orchestration and failure isolation
 
 - Preferred implementation: extract existing daily scan into a reusable `collectAndFilter` stage called **once** by `alerts.ts`; the email path continues to apply seen state and send logic exactly as before. The intelligence path consumes the in-memory filtered pool, writes encrypted archive **even if there is no new email**, and exposes explicit status.
-- Integrate the archive commit with the existing Actions daily-slot workflow and `concurrency: job-alerts`. Persist email seen state only after actual send success; archival state can save independently after scan success. A repeated workflow_dispatch or rerun overwrites the same daily slot logically, without duplicate records or duplicated study PRs.
+- Integrate **encrypted daily artifact upload** with the existing Actions daily-slot workflow and `concurrency: job-alerts`. Persist email seen state only after actual send success; daily artifact persistence can complete independently after scan success. A repeated `workflow_dispatch` or rerun may create a distinct artifact for the same daily slot; retrieval must pick one authoritative successful version per slot, avoid counting duplicates, and never generate duplicate study PRs. Include `actions: read` for retrieving prior runs; grant no broader write permissions than necessary to upload a workflow artifact.
 - Never have both a separate full-crawl workflow and the existing nightly email workflow; do not start a new daily crawl to build an archive.
 - Preserve `--dry-run` behavior: no email, no seen-state writes and **no archive writes**, but a redacted preview is available. `--test-email` does not scan or archive.
 - Failures: one employer feed failure must not abort all archived evidence; log scope and reduce source coverage. LLM failure does not block email. Empty results or insufficient coverage become a visible “insufficient evidence” state, not zero demand. Secret absence fails the archive **closed** without exposing plaintext.
 - Budget targets for PR acceptance: daily scan still fits the current 30-minute Actions timeout; target <= 3 minutes additional intelligence processing on ordinary days, <= 10 new/changed JD LLM extractions per day, and no second source scan. Benchmark with actual CI logs, not assumed performance.
-- No external data retention provider required in v1. GitHub encrypted state is sufficient. Consider a private data store only if size/runtime limits or auditability make Git impractical.
+- No **additional** cloud data provider is required in v1: GitHub Actions' time-limited encrypted artifacts are the initial daily backing store. Verify repository artifact retention settings, API authentication, listing/pagination, artifact size limits and recovery of 14 days of slots in an integration test before enabling it. If Actions artifacts cannot reliably meet the lifecycle or retrieval requirement, **block rollout** and design a private TTL store; never fall back to Git commits.
 
 ## 7. Weekly handoff contract (for interview-prep)
 
@@ -173,7 +175,7 @@ The receiving repository's design is [JD Market Integration RFC](https://github.
 
 ## 8. Implementation plan (each its own PR)
 
-1. **PR A — Scan refactor + archive:** extract scan shared stage, schema v1 + validation, in-memory full requirements extraction, stable dedup/content hash, encryption/retention, Top 10 persistence, deterministic tests. Preserve email and dry-run semantics.
+1. **PR A — Scan refactor + archive:** extract scan shared stage, schema v1 + validation, in-memory full requirements extraction, stable dedup/content hash, encryption, per-day Actions artifact storage with 30-day expiration, same-slot recovery/dedup, deterministic tests. Preserve email and dry-run semantics.
 2. **PR B — Skill intelligence + report:** versioned skill taxonomy and evidence, Job Fit vs provisional Prep Value, 14-day sampled trend report and source coverage metrics, tests for missing/ambiguous evidence.
 3. **PR C — Cross-repo handoff:** GitHub App scoped credentials and weekly sanitized export, read interview-prep status, open/update one PR per ISO week, idempotence, fail-closed privacy controls and review-only behavior.
 
@@ -186,7 +188,7 @@ The design PR contains documentation **only**, not any of the above runtime impl
 - Zero new emails still leads to successful archival snapshot; an email failure never marks an unsent job as seen.
 - `2 Locations` / missing location is flagged for manual review, not confidently assigned to Shanghai/Hangzhou/US; Beijing-only jobs excluded from eligible evidence; no salary guessing.
 - “Required” and “preferred” remain different; missing/partial descriptions, malformed AI JSON, rate limit and interrupted scan are visible as partial failures.
-- Pruning and second same-day run are deterministic; no duplicate weekly proposal PRs or generated file churn on unchanged inputs.
+- Per-day artifacts expire under the 30-day policy; multi-run same-slot selection is deterministic; older observations are never copied to extend their lifespan. Git history must contain zero daily JD archive files. No duplicate weekly proposal PRs or generated file churn on unchanged inputs.
 - With absent/wrong `JD_INTEL_KEY`, no plaintext is written, committed, printed or uploaded; alert flow continues.
 - Public weekly export is tested against an allowlist; contains no resume or proprietary employment material.
 - Weekly suggestions can always be traced to JD IDs and read-only interview-prep source files. No changes to exercise mastery statuses or generated dashboards.
@@ -195,7 +197,7 @@ The design PR contains documentation **only**, not any of the above runtime impl
 ## 10. Open questions for design review
 
 1. Do we want to give a stable slot to China-sourced postings when Chinese employer coverage is primarily manual-only? Proposed default: **no artificial quota; report coverage gap**.
-2. Is the encrypted Git rolling archive enough for a 30-day history, or should a private data store be evaluated after load testing? Proposed default: **encrypted Git**.
+2. Can time-limited encrypted GitHub Actions artifacts reliably support 30-day daily storage and read-back for rolling trends? Proposed default: **per-day Actions artifacts with 30-day expiry**, gated by integration tests; if inadequate, a lifecycle-controlled private TTL store is mandatory instead. Never use Git history as a 30-day retention mechanism.
 3. Should weekly PRs contain only proposed tasks or also write `docs/eight-week-plan.md`? Proposed default: **tasks/report only**, with plan changes done via a separate reviewed PR.
 4. Should the score use a fixed published career-upside rubric, or is salary/compensation better held as an independent quality gate? Proposed default: **separate, no invented TC**.
 
