@@ -71,6 +71,9 @@ test("major US metros plus Shanghai/Hangzhou only, with US-remote and ambiguous 
     job("bayarea", { location: "US-CA-Sunnyvale" }),
     job("seattle", { location: "Seattle, WA" }),
     job("austin", { location: "Austin, TX" }),
+    job("cambridge-ma", { location: "Cambridge, MA" }),
+    job("cambridge-uk", { location: "Cambridge, UK" }),
+    job("richmond-bc", { location: "Richmond, BC" }),
     job("remote-us", { location: "Remote - United States" }),
     job("rural-us", { location: "Ithaca, NY" }),
     job("remote-worldwide", { location: "Remote - Worldwide" }),
@@ -81,7 +84,7 @@ test("major US metros plus Shanghai/Hangzhou only, with US-remote and ambiguous 
   assert.deepEqual(
     filterByLocation(jobs, ["US_MAJOR_METROS", "Shanghai", "Hangzhou"]).map((j) => j.id),
     ["shanghai", "hangzhou", "zhshanghai", "zhhangzhou", "newyork", "chicago", "bayarea",
-      "seattle", "austin", "remote-us", "multi", "mixed"]
+      "seattle", "austin", "cambridge-ma", "remote-us", "multi", "mixed"]
   );
 });
 
