@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { eligibleArtifacts, ciphertextFromZip } from "../src/node/jd-artifact-reader.ts";
+import { eligibleArtifacts, ciphertextFromZip, readRecentArtifacts } from "../src/node/jd-artifact-reader.ts";
 import { buildDailyArchive, encryptArchive } from "../src/node/jd-archive.ts";
 import { buildTrendReport, completedChicagoSlot, renderTrendMarkdown, slotRange, validateDailyArchive } from "../src/node/jd-trends.ts";
 import type { DiscoveredJob } from "../src/core/discover/discover.ts";
@@ -160,6 +160,65 @@ test("ZIP extraction accepts only one ciphertext file, rejects extra entries", (
     writeFileSync(extra, "unwanted");
     execFileSync("zip", ["-q", "-j", zip, extra]);
     assert.throws(() => ciphertextFromZip(readFileSync(zip)));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("Actions integration selects newest successful decryptable slot; never forwards GitHub token to ZIP URL", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "jd-trends-api-test-"));
+  try {
+    const secret = "integration-test-secret-longer-than-thirty-two-characters";
+    const archiveFile = join(dir, "jd-intelligence-slot.enc");
+    const zipFile = join(dir, "good.zip");
+    writeFileSync(archiveFile, encryptArchive(daily(0), secret));
+    execFileSync("zip", ["-q", "-j", zipFile, archiveFile]);
+    const validZip = readFileSync(zipFile);
+    const run = (id: number, conclusion: string) => ({
+      id, name: "Job alerts", status: "completed", conclusion, event: "schedule", head_branch: "main",
+    });
+    const artifact = (id: number, slot: string, created: string) => ({
+      id, name: "jd-intelligence-" + slot, expired: false, created_at: created,
+      size_in_bytes: 4000, workflow_run: { id, head_branch: "main" },
+    });
+    const artifacts = [
+      artifact(102, SLOTS[0], "2026-11-13T02:00:00Z"), // latest but corrupted
+      artifact(101, SLOTS[0], "2026-11-13T01:00:00Z"), // older, valid
+      artifact(103, SLOTS[1], "2026-11-14T01:00:00Z"), // failed run; reject
+    ];
+    let storageCalls = 0;
+    const fakeFetch: typeof fetch = async (input, init) => {
+      const url = String(input);
+      if (url.includes("/actions/artifacts?per_page=100&page=1")) {
+        assert.equal((init?.headers as Record<string, string>)?.Authorization, "Bearer fake-gh-token");
+        return new Response(JSON.stringify({ total_count: artifacts.length, artifacts }), {
+          status: 200, headers: { "content-type": "application/json" },
+        });
+      }
+      const runMatch = /\/actions\/runs\/(\d+)$/.exec(url);
+      if (runMatch) {
+        const id = Number(runMatch[1]);
+        return new Response(JSON.stringify(run(id, id === 103 ? "failure" : "success")), { status: 200 });
+      }
+      const zipMatch = /\/actions\/artifacts\/(\d+)\/zip$/.exec(url);
+      if (zipMatch) return new Response(null, {
+        status: 302, headers: { location: "https://artifact-files.example/" + zipMatch[1] },
+      });
+      const signedMatch = /^https:\/\/artifact-files\.example\/(\d+)$/.exec(url);
+      if (signedMatch) {
+        storageCalls++;
+        assert.equal((init?.headers as Record<string, string> | undefined)?.Authorization, undefined);
+        const bytes = Number(signedMatch[1]) === 101 ? validZip : Buffer.from("corrupt zip");
+        return new Response(new Uint8Array(bytes), { status: 200 });
+      }
+      throw new Error("Unexpected API request");
+    };
+    const result = await readRecentArtifacts(END, "fake-gh-token", secret, fakeFetch);
+    assert.equal(result.available_slots, 1);
+    assert.equal(result.archives[0].slot, SLOTS[0]);
+    assert.equal(result.invalid_or_untrusted_artifacts, 2);
+    assert.equal(storageCalls, 2); // failed run is never downloaded
+    assert.equal(result.superseded_artifacts, 0);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
