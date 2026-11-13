@@ -166,6 +166,7 @@ jobs:
           name: jd-intelligence-${{ steps.due.outputs.slot }}
           path: .data/jd-intelligence-slot.enc
           if-no-files-found: error
+          include-hidden-files: true  # .data is hidden; exact path contains ciphertext only
           retention-days: 30
           compression-level: 0
 
