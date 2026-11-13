@@ -14,6 +14,8 @@
 #   MAIL_TO                  optional, defaults to SMTP_USER
 #   STATE_KEY                any long random string; encrypts the list of jobs
 #                            already emailed, so it can live in a public repo
+#   JD_INTEL_KEY             separate random 32+ character passphrase for encrypted
+#                            JD archive artifacts (optional: absent = no archive)
 # Variables (same page, "Variables" tab), optional:
 #   ALERT_TARGET_LOCATIONS   default: US_MAJOR_METROS, Shanghai, Hangzhou
 #                            Major US cities and US-remote roles; in China only these two cities.
@@ -114,6 +116,8 @@ jobs:
           MAIL_TO: ${{ secrets.MAIL_TO }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          JD_INTEL_KEY: ${{ secrets.JD_INTEL_KEY }}
+          JD_INTEL_SLOT: ${{ steps.due.outputs.slot }}
           ALERT_LOCATIONS: ${{ vars.ALERT_TARGET_LOCATIONS || 'US_MAJOR_METROS, Shanghai, Hangzhou' }}
           ALERT_TOP_N: ${{ vars.ALERT_TOP_N }}
           ALERT_MAX_AGE_DAYS: ${{ vars.ALERT_MAX_AGE_DAYS }}
@@ -151,3 +155,21 @@ jobs:
             git commit -m "alerts: update seen jobs $(date +%F)"
             git push
           fi
+
+      # Independent of email sending and its seen-state commit. A failed email
+      # still preserves today's encrypted snapshot; an upload failure cannot
+      # undo the seen-state commit. Only ciphertext is uploaded.
+      - name: Upload encrypted daily JD archive (30-day retention)
+        if: ${{ always() && steps.due.outputs.run == 'true' && (inputs.mode == '' || inputs.mode == 'send') && hashFiles('.data/jd-intelligence-slot.enc') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: jd-intelligence-${{ steps.due.outputs.slot }}
+          path: .data/jd-intelligence-slot.enc
+          if-no-files-found: error
+          include-hidden-files: true  # .data is hidden; exact path contains ciphertext only
+          retention-days: 30
+          compression-level: 0
+
+      - name: Clean up encrypted JD archive
+        if: ${{ always() && steps.due.outputs.run == 'true' }}
+        run: rm -f .data/jd-intelligence-slot.enc

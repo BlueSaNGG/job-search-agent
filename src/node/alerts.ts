@@ -24,9 +24,9 @@
 // .data/alerts-seen.json; delete that file to start over.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { findCompany, readableCompanyIds } from "../core/discover/companies.ts";
-import { discoverCompany, type DiscoveredJob } from "../core/discover/discover.ts";
-import { filterByLocation, filterBySalary, filterOutEntry, pickNewJobs, renderEmail, splitByAge, updateSeen, type SeenJobs } from "../core/alerts.ts";
+import { pickNewJobs, renderEmail, splitByAge, updateSeen, type SeenJobs } from "../core/alerts.ts";
+import { collectJobMatches, filterScanMatches } from "./scan.ts";
+import { saveDailyArchive } from "./jd-archive.ts";
 import { rankJobs, type Ranking } from "../core/rank.ts";
 import { mailConfig, sendMail } from "./mailer.ts";
 import { workersAi, workersAiEmbed } from "./workers-ai.ts";
@@ -105,34 +105,16 @@ async function main() {
     return;
   }
 
-  const ids = readableCompanyIds();
-  const matched: DiscoveredJob[] = [];
-  const failed: string[] = [];
-  for (const id of ids) {
-    const company = findCompany(id)!;
-    try {
-      const r = await discoverCompany(company, fetch, { keepDescription: true });
-      matched.push(...r.matched);
-      const dated = r.matched.filter((j) => j.postedAt).length;
-      console.log(`  ${company.name.padEnd(12)} ${r.matched.length} match (${r.listed} listed)${r.matched.length ? `, ${dated} with a posting date` : ""}`);
-    } catch (err) {
-      failed.push(company.name);
-      console.log(`  ${company.name.padEnd(12)} failed: ${(err as Error).message}`);
-    }
-  }
-  if (failed.length === ids.length) {
-    throw new Error("Every company failed. Are you online?");
-  }
-
+  // Scan once; the same qualified results drive email notifications and
+  // independent daily JD intelligence (even on zero-new-email days).
+  const scan = await collectJobMatches();
+  const { matched, failed } = scan;
   const locations = (process.env.ALERT_LOCATIONS ?? "").split(",");
-  const inLocations = filterByLocation(matched, locations);
   const minSalary = numberSetting(process.env.ALERT_MIN_SALARY, 110000);
-  const { kept: paid, dropped: underpaid } = filterBySalary(inLocations, minSalary);
-  if (underpaid.length) console.log(`${underpaid.length} jobs dropped: stated pay tops out under $${minSalary.toLocaleString("en-US")}.`);
-  // This fork only watches experienced roles: entry-level jobs are dropped
-  // here, before ranking, so they are never emailed or marked as seen.
-  const relevant = filterOutEntry(paid);
-  if (relevant.length !== paid.length) console.log(`${paid.length - relevant.length} entry-level jobs skipped: only experienced roles are emailed.`);
+  const { paid, underpaid, relevant } = filterScanMatches(matched, locations, minSalary);
+  if (underpaid.length) console.log(underpaid.length + " jobs dropped: stated pay tops out under $" + minSalary.toLocaleString("en-US") + ".");
+  if (relevant.length !== paid.length) console.log((paid.length - relevant.length) + " entry-level jobs skipped: only experienced roles are emailed.");
+
   const previous = loadSeen();
   const firstRun = previous === null;
   const seen = previous ?? { jobs: {} };
@@ -152,6 +134,23 @@ async function main() {
     console.log(`${relevant.length} matching jobs${where}.`);
   }
   console.log(`${toSend.length} to email.`);
+
+  // The archive does not use toSend or emailed/seen status: it must work when
+  // there are no new alerts. Errors never prevent the existing email path.
+  if (!args.has("--dry-run")) {
+    const slotParts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit",
+    }).formatToParts(started);
+    const part = (name: string) => slotParts.find(x => x.type === name)?.value ?? "";
+    const slot = process.env.JD_INTEL_SLOT || (part("year") + "-" + part("month") + "-" + part("day"));
+    try {
+      await saveDailyArchive(relevant, scan, slot, loadResume, started,
+        !args.has("--no-rank") && process.env.ALERT_RANKING !== "off");
+    } catch (err) {
+      console.log("JD Archive degraded (email unaffected): " + (err as Error).message);
+    }
+  }
+
 
   if (!toSend.length) {
     if (!args.has("--dry-run")) saveSeen(updateSeen(seen, silent, relevant));
