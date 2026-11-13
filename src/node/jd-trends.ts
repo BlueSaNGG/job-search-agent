@@ -109,7 +109,9 @@ export interface TrendReport {
   sample: {
     unique_jobs: number;
     unique_companies: number;
+    updated_jobs: number;
     evidence_eligible_jobs: number;
+    skill_evidence_jobs: number;
     recent_evidence_jobs: number;
     previous_evidence_jobs: number;
     ambiguous_location_jobs: number;
@@ -190,6 +192,15 @@ export function buildTrendReport(
   const eligibleAll = [...all.values()].filter(isEvidenceEligible);
   const eligiblePrevious = [...previous.values()].filter(isEvidenceEligible);
   const eligibleRecent = [...recent.values()].filter(isEvidenceEligible);
+  const skillEvidenceAll = eligibleAll.filter(j => normalizedSignals(j).size > 0);
+  const skillEvidencePrevious = eligiblePrevious.filter(j => normalizedSignals(j).size > 0);
+  const skillEvidenceRecent = eligibleRecent.filter(j => normalizedSignals(j).size > 0);
+  const observedHashes = new Map<string, Set<string>>();
+  for (const day of days) for (const j of day.jobs) {
+    if (!observedHashes.has(j.id)) observedHashes.set(j.id, new Set());
+    observedHashes.get(j.id)!.add(j.content_hash);
+  }
+  const updatedJobs = [...observedHashes.values()].filter(h => h.size > 1).length;
   const previousCounts = sampleSkillCounts(previous);
   const recentCounts = sampleSkillCounts(recent);
   const allCounts = sampleSkillCounts(all);
@@ -202,7 +213,8 @@ export function buildTrendReport(
   const good = days.length >= MIN_SLOTS && previousSlots >= MIN_PER_HALF &&
     recentSlots >= MIN_PER_HALF && eligibleAll.length >= 10 &&
     eligiblePrevious.length >= 5 && eligibleRecent.length >= 5 &&
-    rate !== null && rate <= MAX_SOURCE_FAILURE_RATE * 100;
+    skillEvidenceAll.length >= 8 && skillEvidencePrevious.length >= 3 &&
+    skillEvidenceRecent.length >= 3 && rate !== null && rate <= MAX_SOURCE_FAILURE_RATE * 100;
 
   const statuses = new Map<string, { required: number; preferred: number; mentioned: number; companies: Set<string> }>();
   for (const job of eligibleAll) {
@@ -247,7 +259,9 @@ export function buildTrendReport(
     source_coverage: { attempts: sourceAttempts, failures: sourceFailures, failure_rate_pct: rate },
     sample: {
       unique_jobs: all.size, unique_companies: new Set([...all.values()].map(j => j.company_id)).size,
+      updated_jobs: updatedJobs,
       evidence_eligible_jobs: eligibleAll.length,
+      skill_evidence_jobs: skillEvidenceAll.length,
       recent_evidence_jobs: eligibleRecent.length,
       previous_evidence_jobs: eligiblePrevious.length,
       ambiguous_location_jobs: [...all.values()].filter(j => j.location_status !== "eligible").length,
@@ -271,6 +285,8 @@ export function renderTrendMarkdown(report: TrendReport): string {
     "",
     "- Daily archives: " + w.observed_slots + "/14 (previous " + s.slots_previous + "/7; recent " + s.slots_recent + "/7)",
     "- Distinct sampled jobs / companies: " + s.unique_jobs + " / " + s.unique_companies,
+    "- Observed content revisions (distinct job IDs): " + s.updated_jobs,
+    "- JDs with usable skill evidence: " + s.skill_evidence_jobs,
     "- Evidence-eligible jobs (verified location and readable description): " + s.evidence_eligible_jobs,
     "- Source attempts / failures: " + report.source_coverage.attempts + " / " + report.source_coverage.failures,
     "- Ambiguous locations / unavailable descriptions / partial descriptions: " +
