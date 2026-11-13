@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { categorize, classify, yearsMentions } from "../src/core/discover/classify.ts";
 
-test("categories follow the seven title groups", () => {
+test("categories follow the eight title groups", () => {
   const cases: [string, string | null][] = [
     ["Full Stack Engineer", "Full-stack"],
     ["Fullstack Developer", "Full-stack"],
@@ -141,4 +141,32 @@ test("equal-opportunity wording about citizenship status is not a requirement", 
 test("a JD range demotes an entry title only when the title is not entry", () => {
   assert.equal(classify("Software Engineer", "1-3 years of experience").level, "maybe");
   assert.equal(classify("Software Engineer I", "1-3 years of experience").level, "entry");
+});
+
+test("infrastructure and developer-productivity roles are recognized", () => {
+  const titles = [
+    "Senior Infrastructure Engineer", "Platform Engineer", "Build Engineer",
+    "Build and Release Engineer", "Developer Productivity Engineer",
+    "Developer Experience Engineer", "CI/CD Engineer", "ML Infrastructure Engineer",
+  ];
+  for (const title of titles) {
+    assert.equal(categorize(title), "Infra/Platform", title);
+    assert.equal(classify(title, "5+ years of engineering experience.").level, "maybe", title);
+  }
+});
+
+test("MTS titles at AI infrastructure companies are software roles", () => {
+  const titles = [
+    "Member of Technical Staff, LLM Infrastructure",
+    "Member of Technical Staff - Platform Engineering",
+    "Member of Technical Staff, AI Infrastructure Reliability",
+    "Member of Technical Staff, AI Training Infrastructure",
+    "Member of Technical Staff",
+  ];
+  for (const title of titles) {
+    assert.equal(categorize(title), "SWE", title);
+    assert.equal(classify(title, "5 years of software engineering experience").level, "maybe", title);
+  }
+  assert.equal(classify("Member of Technical Staff, New Grad").level, "entry");
+  assert.equal(classify("Staff Software Engineer").level, "excluded");
 });

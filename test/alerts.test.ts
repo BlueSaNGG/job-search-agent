@@ -43,6 +43,51 @@ test("filterByLocation keeps Workday multi-location postings like '2 Locations'"
   assert.deepEqual(filterByLocation(jobs, ["China", "Shanghai"]).map((j) => j.id), ["multi"]);
 });
 
+
+test("mixed US and China keywords keep explicit Chinese city matches", () => {
+  const jobs = [
+    job("shanghai", { location: "Shanghai, China" }),
+    job("hangzhou", { location: "Hangzhou, Zhejiang, China" }),
+    job("beijing", { location: "Beijing, China" }),
+    job("seattle", { location: "Seattle, WA" }),
+    job("shenzhen", { location: "Shenzhen, China" }),
+  ];
+  assert.deepEqual(
+    filterByLocation(jobs, ["Shanghai", "Hangzhou", "US"]).map((j) => j.id),
+    ["shanghai", "hangzhou", "seattle"]
+  );
+});
+
+test("major US metros plus Shanghai/Hangzhou only, with US-remote and ambiguous locations", () => {
+  const jobs = [
+    job("shanghai", { location: "Shanghai, China" }),
+    job("hangzhou", { location: "Hangzhou, Zhejiang, China" }),
+    job("zhshanghai", { location: "上海, 中国" }),
+    job("zhhangzhou", { location: "杭州, 中国" }),
+    job("beijing", { location: "Beijing, China" }),
+    job("shenzhen", { location: "Shenzhen, China" }),
+    job("newyork", { location: "New York, NY" }),
+    job("chicago", { location: "Chicago, IL" }),
+    job("bayarea", { location: "US-CA-Sunnyvale" }),
+    job("seattle", { location: "Seattle, WA" }),
+    job("austin", { location: "Austin, TX" }),
+    job("cambridge-ma", { location: "Cambridge, MA" }),
+    job("cambridge-uk", { location: "Cambridge, UK" }),
+    job("richmond-bc", { location: "Richmond, BC" }),
+    job("remote-us", { location: "Remote - United States" }),
+    job("rural-us", { location: "Ithaca, NY" }),
+    job("remote-worldwide", { location: "Remote - Worldwide" }),
+    job("london", { location: "London, UK" }),
+    job("multi", { location: "3 Locations" }),
+    job("mixed", { location: "Beijing, China; San Francisco, CA" }),
+  ];
+  assert.deepEqual(
+    filterByLocation(jobs, ["US_MAJOR_METROS", "Shanghai", "Hangzhou"]).map((j) => j.id),
+    ["shanghai", "hangzhou", "zhshanghai", "zhhangzhou", "newyork", "chicago", "bayarea",
+      "seattle", "austin", "cambridge-ma", "remote-us", "multi", "mixed"]
+  );
+});
+
 test("filterByLocation matches whole words and understands US state codes", () => {
   const jobs = [
     job("aarhus", { location: "Aarhus, Denmark" }),

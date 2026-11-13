@@ -75,6 +75,61 @@ export const COMPANIES: Company[] = [
   c("adobe", "Adobe", "Enterprise / infra", false, wd("adobe.wd5.myworkdayjobs.com", "adobe", "external_experienced")),
   c("salesforce", "Salesforce", "Enterprise / infra", false, wd("salesforce.wd12.myworkdayjobs.com", "salesforce", "External_Career_Site")),
   c("cloudflare", "Cloudflare", "Enterprise / infra", true, gh("cloudflare")),
+  c("servicenow", "ServiceNow", "Enterprise / infra", false, null, "Careers site (careers.servicenow.com) has no public Greenhouse, Lever, Ashby, or Workday board."),
+  c("workday", "Workday", "Enterprise / infra", false, wd("workday.wd5.myworkdayjobs.com", "workday", "Workday")),
+  c("atlassian", "Atlassian", "Enterprise / infra", false, null, "Careers site (atlassian.com/company/careers) has no public Greenhouse, Lever, Ashby, or Workday board."),
+  c("intuit", "Intuit", "Enterprise / infra", false, null, "Careers site runs on Avature (jobs.intuit.com); no supported reader."),
+  c("mongodb", "MongoDB", "Enterprise / infra", false, gh("mongodb")),
+  c("crowdstrike", "CrowdStrike", "Enterprise / infra", false, null, "Careers site (crowdstrike.com/careers) has no public Greenhouse, Lever, Ashby, or Workday board."),
+  c("zoom", "Zoom", "Enterprise / infra", false, null, "Careers site (careers.zoom.us) has no public Greenhouse, Lever, Ashby, or Workday board."),
+  c("dropbox", "Dropbox", "Enterprise / infra", false, gh("dropbox")),
+  c("shopify", "Shopify", "Enterprise / infra", false, null, "Careers site (shopify.com/careers) has no public Greenhouse, Lever, Ashby, or Workday board."),
+
+  // Semiconductors (fork addition: strong fit with the infra/ML-platform direction)
+  c("amd", "AMD", "Semiconductors", false, null, "Careers site is Phenom-based (careers.amd.com); no public job-board API."),
+  c("intel", "Intel", "Semiconductors", false, wd("intel.wd1.myworkdayjobs.com", "intel", "External")),
+  c("qualcomm", "Qualcomm", "Semiconductors", false, null, "Workday site rejects the public jobs API (HTTP 422 on wd5; the wd12 mirror returns no jobs)."),
+  c("broadcom", "Broadcom", "Semiconductors", false, wd("broadcom.wd1.myworkdayjobs.com", "broadcom", "External_Career")),
+  c("micron", "Micron", "Semiconductors", false, wd("micron.wd1.myworkdayjobs.com", "micron", "External")),
+  c("ti", "Texas Instruments", "Semiconductors", false, null, "Careers site runs on Oracle Recruiting (careers.ti.com); no supported reader."),
+  c("asml", "ASML", "Semiconductors", false, wd("asml.wd3.myworkdayjobs.com", "asml", "ASMLEXT1")),
+
+  // AI & high-growth (fork addition)
+  c("coreweave", "CoreWeave", "AI & high-growth", false, gh("coreweave")),
+  c("vercel", "Vercel", "AI & high-growth", false, gh("vercel")),
+  c("notion", "Notion", "AI & high-growth", false, ashby("notion")),
+  c("linear", "Linear", "AI & high-growth", false, ashby("linear")),
+  // High-upside AI infrastructure, 2026-11: ATS slug verified from public job boards.
+  c("anyscale", "Anyscale", "AI & high-growth", true, ashby("anyscale")),
+  c("hightouch", "Hightouch", "AI & high-growth", true, ashby("hightouch-inc")),
+  c("modal", "Modal", "AI & high-growth", true, ashby("modal")),
+  c("fireworks", "Fireworks AI", "AI & high-growth", true, ashby("fireworks")),
+  c("crusoe", "Crusoe", "AI & high-growth", false, ashby("crusoe")),
+
+  // Finance (fork addition: top pay for SWE)
+  c("janestreet", "Jane Street", "Finance", false, gh("janestreet")),
+  c("twosigma", "Two Sigma", "Finance", false, null, "Careers site runs on iCIMS (careers.twosigma.com); no supported reader."),
+  // Quant trading: DRW/IMC have public Greenhouse boards. The others use
+  // custom job pages or unverified/partial boards, so they are manual-only.
+  c("drw", "DRW", "Finance", true, gh("drweng")),
+  c("imc", "IMC Trading", "Finance", true, gh("imc")),
+  c("citadelsecurities", "Citadel Securities", "Finance", false, null, "No verified full supported ATS feed; track manually: https://www.citadelsecurities.com/careers/open-opportunities/"),
+  c("hrt", "Hudson River Trading", "Finance", false, null, "Official careers uses its own job search; no verified full supported feed: https://www.hudsonrivertrading.com/careers/"),
+  c("optiver", "Optiver", "Finance", false, null, "Public optiverprivate Greenhouse board is partial, not the full Optiver job list. Track manually: https://www.optiver.com/join-us/jobs/"),
+  c("citadel", "Citadel", "Finance", false, null, "No verified full supported ATS feed; track manually: https://www.citadel.com/careers/open-opportunities/"),
+
+  // Global fintech: public Ashby jobs cover engineering in China and the US.
+  c("airwallex", "Airwallex", "Global fintech", true, ashby("airwallex")),
+
+  // Shanghai/Hangzhou targets. No supported/verified public ATS boards.
+  // Keep the companies visible without pretending they are auto-scanned.
+  c("bytedance", "ByteDance / TikTok", "China growth / infra", true, null, "Manual-only: no verified Greenhouse/Lever/Ashby/Workday feed covering China roles. Search the official ByteDance/TikTok careers site."),
+  c("alibabacloud", "Alibaba Cloud", "China growth / infra", true, null, "Manual-only: no verified supported ATS feed for Shanghai/Hangzhou engineering roles. Search Alibaba Group recruitment."),
+  c("deepseek", "DeepSeek", "China growth / infra", true, null, "Manual-only: no verified supported ATS feed. Track official DeepSeek recruitment for Hangzhou."),
+  c("minimax", "MiniMax", "China growth / infra", true, null, "Manual-only: no verified supported ATS feed. Track official MiniMax recruitment for Shanghai."),
+  c("pdd", "PDD / Pinduoduo", "China growth / infra", true, null, "Manual-only: no verified supported ATS feed. Track PDD engineering roles in Shanghai."),
+  c("antgroup", "Ant Group", "China growth / infra", false, null, "Manual-only: no verified supported ATS feed. Track Ant Group recruitment for Shanghai/Hangzhou."),
+  c("kuaishou", "Kuaishou", "China growth / infra", false, null, "Manual-only: no verified supported ATS feed. Track official Kuaishou recruitment for Hangzhou."),
 ];
 
 export function findCompany(id: string): Company | undefined {

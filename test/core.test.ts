@@ -43,7 +43,7 @@ function setup(overrides: { page?: Response; llmReply?: (system: string) => stri
       new Request(`${BASE}/resume`, {
         method: "POST",
         headers: { "content-type": "application/pdf", "x-filename": encodeURIComponent("My Résumé.pdf") },
-        body: bytes,
+        body: new Uint8Array(bytes),
       })
     );
   return { tracker, post, upload, prompts, getState: () => state };

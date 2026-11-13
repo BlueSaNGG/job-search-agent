@@ -9,6 +9,7 @@
 export type Category =
   | "QA/SDET"
   | "SRE/DevOps"
+  | "Infra/Platform"
   | "Full-stack"
   | "Frontend"
   | "Backend"
@@ -31,11 +32,16 @@ const CATEGORY_RULES: [Category, RegExp][] = [
     /\bsdet\b|software (development )?engineer(s)? in test|software (quality|test) engineer|quality assurance engineer|\bqa engineer|test automation/i,
   ],
   ["SRE/DevOps", /site reliability engineer|\bsre\b|dev[\s-]?ops engineer|\bdevops\b/i],
+  [
+    "Infra/Platform",
+    /\b(?:infrastructure|platform|build|release|toolchain|developer productivity|developer experience|devex|ci\/cd)\s+(?:software\s+)?engineer\b|\bbuild and release engineer\b/i,
+  ],
   ["Full-stack", /full[\s-]?stack/i],
   ["Frontend", /front[\s-]?end|\bui software/i],
   ["Backend", /back[\s-]?end/i],
   ["SDE", /software (development|dev|developer) engineer|\bsoftware developer\b|\bsde\b/i],
-  ["SWE", /software engineer/i],
+  // AI infrastructure companies (Modal, Fireworks) use MTS for software engineers.
+  ["SWE", /software engineer|member of (?:the )?technical staff|\bmts\b/i],
 ];
 
 export function categorize(title: string): Category | null {

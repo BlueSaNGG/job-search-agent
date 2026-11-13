@@ -44,12 +44,13 @@ function fakeFetch(map: Record<string, unknown>): typeof fetch {
 test("every company has a unique id and a platform or none", () => {
   const ids = new Set(COMPANIES.map((c) => c.id));
   assert.equal(ids.size, COMPANIES.length);
-  assert.equal(COMPANIES.length, 40);
+  assert.equal(COMPANIES.length, 81);
+  assert.equal(COMPANIES.filter((c) => c.source !== null).length, 56);
   for (const c of COMPANIES) {
     if (c.source === null) assert.ok(c.note, `${c.id} needs a reason it can't be read`);
   }
   const manual = COMPANIES.filter((c) => !c.source).map((c) => c.id).sort();
-  assert.deepEqual(manual, ["google", "linkedin", "meta", "uber"]);
+  assert.deepEqual(manual, ["alibabacloud","amd","antgroup","atlassian","bytedance","citadel","citadelsecurities","crowdstrike","deepseek","google","hrt","intuit","kuaishou","linkedin","meta","minimax","optiver","pdd","qualcomm","servicenow","shopify","ti","twosigma","uber","zoom"]);
 });
 
 test("Greenhouse, Lever and Ashby readers normalize jobs", async () => {
@@ -104,12 +105,19 @@ function setup(map: Record<string, unknown>, state: Partial<TrackerState> = {}) 
   return { req, get: () => current };
 }
 
-test("GET companies lists all 40 with readability", async () => {
+test("GET companies lists all 81 with readability", async () => {
   const t = setup({});
   const list = (await (await t.req("companies")).json()) as any[];
-  assert.equal(list.length, 40);
+  assert.equal(list.length, 81);
+  assert.equal(list.filter((c) => c.readable).length, 56);
+  assert.equal(list.find((c) => c.id === "drw").readable, true);
+  assert.equal(list.find((c) => c.id === "airwallex").readable, true);
+  assert.equal(list.find((c) => c.id === "bytedance").readable, false);
+  assert.equal(list.find((c) => c.id === "citadel").readable, false);
   assert.equal(list.find((c) => c.id === "google").readable, false);
   assert.equal(list.find((c) => c.id === "anthropic").readable, true);
+  assert.equal(list.find((c) => c.id === "amd").readable, false);
+  assert.equal(list.find((c) => c.id === "mongodb").readable, true);
 });
 
 test("discover saves matches, reports counts, and reruns report only new jobs", async () => {
