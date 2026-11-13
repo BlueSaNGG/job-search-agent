@@ -201,6 +201,7 @@ export async function saveDailyArchive(
   slot: string,
   resumeLoader: () => Promise<string | null>,
   now = new Date(),
+  allowRanking = true,
 ): Promise<void> {
   const secret = process.env.JD_INTEL_KEY;
   if (!secret) {
@@ -209,7 +210,7 @@ export async function saveDailyArchive(
   }
   const pool = chooseArchiveCandidates(eligible, now.getTime());
   let ranking: Ranking | null = null;
-  if (pool.length) {
+  if (pool.length && allowRanking) {
     try {
       const resume = await resumeLoader();
       if (resume) ranking = await rankJobs(resume, pool, workersAiEmbed, null, 0);
