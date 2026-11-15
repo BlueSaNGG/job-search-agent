@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, unlinkSync } from "node:fs";
 import type { DiscoveredJob } from "../src/core/discover/discover.ts";
-import { ARCHIVE_PATH, buildDailyArchive, chooseArchiveCandidates, decryptArchive, encryptArchive, extractSkillMentions, saveDailyArchive, selectDailyTop } from "../src/node/jd-archive.ts";
+import { ARCHIVE_PATH, buildDailyArchive, chooseArchiveCandidates, decryptArchive, encryptArchive, extractSkillMentions, extractSkillSignals, saveDailyArchive, selectDailyTop } from "../src/node/jd-archive.ts";
 import { filterScanMatches } from "../src/node/scan.ts";
 
 const DATE = "2026-11-12T20:00:00.000Z";
@@ -122,6 +122,33 @@ test("Skill mentions are normalized, bounded and do not imply required status", 
   })], null, "2026-11-12", DATE, 56, 0, 1);
   assert.deepEqual(archive.jobs[0].skill_mentions, ["build_systems", "bazel", "kubernetes"]);
   assert.equal(JSON.stringify(archive).includes("build infrastructure with"), false);
+});
+
+test("section headings infer required/preferred; unheaded terms remain mentioned", () => {
+  const signals = extractSkillSignals(
+    "Requirements:\n- Bazel and Kubernetes\nPreferred Qualifications:\n- C++ and CMake\nResponsibilities:\n- CI/CD pipelines",
+  );
+  const match = Object.fromEntries(signals.map(s => [s.id, [s.requirement, s.section]]));
+  assert.deepEqual(match.bazel, ["required", "minimum_qualifications"]);
+  assert.deepEqual(match.kubernetes, ["required", "minimum_qualifications"]);
+  assert.deepEqual(match.cpp, ["preferred", "preferred_qualifications"]);
+  assert.deepEqual(match.cmake, ["preferred", "preferred_qualifications"]);
+  assert.deepEqual(match.ci_cd, ["mentioned", "responsibilities"]);
+  assert.deepEqual(extractSkillSignals("Bazel and Kubernetes"), [
+    { id: "bazel", requirement: "mentioned", section: "unknown" },
+    { id: "kubernetes", requirement: "mentioned", section: "unknown" },
+  ]);
+});
+
+test("section-aware extraction supports Chinese headings without archiving raw sentences", () => {
+  const desc = "任职要求：熟悉 Docker 和 Python\n加分项：有 Bazel 项目经验";
+  const archive = buildDailyArchive([job("zh", "a", { description: desc })], null, "2026-11-12", DATE, 56, 0, 1);
+  assert.deepEqual(archive.jobs[0].skill_signals, [
+    { id: "docker", requirement: "required", section: "minimum_qualifications" },
+    { id: "python", requirement: "required", section: "minimum_qualifications" },
+    { id: "bazel", requirement: "preferred", section: "preferred_qualifications" },
+  ]);
+  assert.equal(JSON.stringify(archive).includes("熟悉"), false);
 });
 
 test("Archive selection is independent of mail seen-state and permits zero jobs", () => {
