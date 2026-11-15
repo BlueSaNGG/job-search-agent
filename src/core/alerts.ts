@@ -179,6 +179,14 @@ export interface EmailRanking {
   notes: Record<string, { fit: number; why: string; gap: string }>;
 }
 
+/** Unresolved ATS locations are candidates for manual review, not verified target cities. */
+function emailLocation(j: DiscoveredJob): string {
+  const loc = j.location.trim();
+  return !loc || /^\d+\s+locations?$/i.test(loc)
+    ? `${loc || "Not listed"} (location unverified)`
+    : loc;
+}
+
 const shortDate = (j: DiscoveredJob, timeZone?: string) => {
   const d = j.postedAt ? new Date(j.postedAt) : null;
   return d && !Number.isNaN(d.getTime())
@@ -217,7 +225,7 @@ export function renderEmail(
 
   const subject =
     `SWE jobs · ${maybeJobs.length} maybe` +
-    (best ? ` · best match: ${best.companyName} (${score(best)})` : "") +
+    (best ? ` · top similarity: ${best.companyName} (${score(best)})` : "") +
     ` · ${day}`;
 
   const summary =
@@ -227,7 +235,8 @@ export function renderEmail(
 
   const notes: string[] = [];
   if (opts.failed?.length) notes.push(`Couldn't read today: ${opts.failed.join(", ")}. They'll be tried again next time.`);
-  if (ranked) notes.push("Match = how close the job description is to your resume (embedding similarity, 0-100). It ranks jobs against each other; it isn't a probability.");
+  if (ranked) notes.push("Similarity (embedding similarity, 0-100) compares resume and JD text; it is NOT a job-fit probability, eligibility check, required-skill verification, or interview prediction. Why/Gap notes are AI-generated hypotheses: verify requirements against the full official JD.");
+  if (maybeJobs.some(j => emailLocation(j).includes("(location unverified)"))) notes.push("Location warning: some postings list only a count or no location. They are included for manual review; do not assume they match your target cities.");
   if (opts.rankingError) notes.push(`Ranking by resume wasn't available today: ${opts.rankingError}`);
 
   const sections = [
@@ -240,8 +249,8 @@ export function renderEmail(
     textLines.push(`${sec.title.toUpperCase()} (${sec.jobs.length + sec.more})`, "");
     if (!sec.jobs.length) textLines.push("(none today)", "");
     for (const j of sec.jobs) {
-      textLines.push(`- ${ranked ? `[Match ${score(j)}] ` : ""}${j.companyName}: ${j.title}`);
-      textLines.push(`  ${j.location || "Location not listed"} · ${j.category} · Posted ${shortDate(j, opts.timeZone)} · Salary ${formatSalary(j.salary)}`);
+      textLines.push(`- ${ranked ? `[Similarity ${score(j)}] ` : ""}${j.companyName}: ${j.title}`);
+      textLines.push(`  ${emailLocation(j)} · ${j.category} · Posted ${shortDate(j, opts.timeZone)} · Salary ${formatSalary(j.salary)}`);
       const note = opts.ranking?.notes[j.id];
       if (note) textLines.push(`  Why: ${note.why}`, ...(note.gap ? [`  Gap: ${note.gap}`] : []));
       textLines.push(`  Rule: ${j.reasons.join("; ")}`, `  ${j.url}`, "");
@@ -267,7 +276,7 @@ export function renderEmail(
         return `<tr>
   ${td(`<b>${esc(j.companyName)}</b>`)}
   ${td(`<a href="${esc(j.url)}" style="color:${GREEN};font-weight:600;text-decoration:none;border-bottom:1px solid ${PINK}">${esc(j.title)}</a>`, ";min-width:160px")}
-  ${td(esc(j.location || "Not listed"))}
+  ${td(esc(emailLocation(j)))}
   ${td(esc(j.category), ";white-space:nowrap")}
   ${td(esc(shortDate(j, opts.timeZone)), ";white-space:nowrap")}
   ${td(j.salary ? `<b>${esc(formatSalary(j.salary))}</b>` : `<span style="color:${MUTED}">Not stated</span>`, ";white-space:nowrap")}
@@ -277,7 +286,7 @@ export function renderEmail(
       })
       .join("\n");
     return `<table style="border-collapse:collapse;width:100%;border:1px solid ${LINE};border-radius:8px;overflow:hidden">
-<tr style="background:${headBg}">${th("Company", headText)}${th("Role", headText)}${th("Location", headText)}${th("Type", headText)}${th("Posted", headText)}${th("Salary", headText)}${ranked ? th("Match", headText) : ""}${th("Why", headText)}</tr>
+<tr style="background:${headBg}">${th("Company", headText)}${th("Role", headText)}${th("Location", headText)}${th("Type", headText)}${th("Posted", headText)}${th("Salary", headText)}${ranked ? th("Similarity", headText) : ""}${th("Why", headText)}</tr>
 ${rows}
 </table>`;
   };
