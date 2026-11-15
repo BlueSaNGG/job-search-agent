@@ -184,7 +184,7 @@ export function buildWeeklyHandoff(
   };
   const next = new Date(Date.parse(slots[13] + "T00:00:00Z") + MS_PER_DAY).toISOString();
   const payload = {
-    schema_version: 1 as const, week_id: weekId(endSlot),
+    schema_version: 1 as const, week_id: weekId(next.slice(0, 10)),
     window: { from: slots[0] + "T00:00:00Z", to: next },
     generated_at: new Date(generatedAt).toISOString(),
     target_profile_version: HANDOFF_PROFILE_VERSION,
