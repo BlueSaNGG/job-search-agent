@@ -252,7 +252,7 @@ test("email: empty section says none today; long sections are cut", () => {
   assert.match(many.text, /…and 30 more\./);
 });
 
-test("email with a ranking: sorted by match, notes in Why, entry jobs dropped", () => {
+test("email with a ranking: sorted by similarity, notes in Why, entry jobs dropped", () => {
   const jobs = [
     job("low", { companyName: "Airbnb", level: "maybe" }),
     job("top", { companyName: "Stripe", level: "maybe" }),
@@ -263,21 +263,37 @@ test("email with a ranking: sorted by match, notes in Why, entry jobs dropped", 
     date: new Date("2026-10-11T18:00:00Z"),
     ranking: { scores: { low: 41, top: 88, mid: 67 }, notes: { top: { fit: 85, why: "Python <services>", gap: "No Kafka" } } },
   });
-  assert.match(email.subject, /best match: Stripe \(88\)/);
+  assert.match(email.subject, /top similarity: Stripe \(88\)/);
   const t = email.text;
-  assert.ok(t.indexOf("[Match 88] Stripe") < t.indexOf("[Match 67] Reddit"), "sorted by score");
-  assert.ok(t.indexOf("[Match 67] Reddit") < t.indexOf("[Match 41] Airbnb"), "sorted by score");
+  assert.ok(t.indexOf("[Similarity 88] Stripe") < t.indexOf("[Similarity 67] Reddit"), "sorted by score");
+  assert.ok(t.indexOf("[Similarity 67] Reddit") < t.indexOf("[Similarity 41] Airbnb"), "sorted by score");
   assert.doesNotMatch(t, /Anthropic/);
   assert.match(t, /Why: Python <services>\n  Gap: No Kafka/);
   assert.match(email.html, /✓ Python &lt;services&gt;/);
-  assert.match(email.html, /<th[^>]*>Match<\/th>/);
+  assert.match(email.html, /<th[^>]*>Similarity<\/th>/);
   assert.match(t, /embedding similarity/);
+  assert.match(t, /NOT a job-fit probability/);
+  assert.match(email.html, /AI-generated hypotheses/);
 });
 
-test("email explains when ranking wasn't available, and has no Match column", () => {
+test("email explains when ranking wasn't available, and has no Similarity column", () => {
   const email = renderEmail([job("a")], { date: new Date(), rankingError: "no resume found." });
   assert.match(email.text, /Ranking by resume wasn't available today: no resume found\./);
-  assert.doesNotMatch(email.html, /<th[^>]*>Match<\/th>/);
+  assert.doesNotMatch(email.html, /<th[^>]*>Similarity<\/th>/);
+});
+
+test("email marks missing or placeholder ATS locations as unverified in text and HTML", () => {
+  const email = renderEmail([
+    job("ambiguous", { level: "maybe", location: "2 Locations" }),
+    job("missing", { level: "maybe", location: "" }),
+    job("verified", { level: "maybe", location: "Shanghai, China" }),
+  ], { date: new Date("2026-11-15T18:00:00Z") });
+  assert.match(email.text, /2 Locations \(location unverified\)/);
+  assert.match(email.text, /Not listed \(location unverified\)/);
+  assert.match(email.html, /2 Locations \(location unverified\)/);
+  assert.match(email.text, /Shanghai, China/);
+  assert.doesNotMatch(email.text, /Shanghai, China \(location unverified\)/);
+  assert.match(email.text, /included for manual review/);
 });
 
 test("email shows the posting date", () => {
