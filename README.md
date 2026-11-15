@@ -13,6 +13,8 @@ flowchart LR
 
 **Stack:** TypeScript · Node · Cloudflare Workers AI · GitHub Actions · automated tests
 
+**How to interpret job alerts:** the numerical **Similarity (0–100)** is resume/JD embedding similarity, not required-skill eligibility or an interview probability. AI-written Why/Gap notes may be incomplete. Workday placeholders such as `2 Locations` and missing locations are kept for **manual review** but explicitly marked unverified in email; verify the full JD and actual application location before applying. An individual rejection or callback cannot prove a particular missing skill or calibrate scores by itself.
+
 **Target locations:** major US metros (including US-based remote jobs); in China, **Shanghai and Hangzhou only**. The scheduled workflow uses `ALERT_TARGET_LOCATIONS=US_MAJOR_METROS, Shanghai, Hangzhou` by default. The old `ALERT_LOCATIONS` repository variable was removed in the 2026-11-12 cleanup. Update `ALERT_TARGET_LOCATIONS` to customize.
 
 Job listings with a missing location or a Workday placeholder such as `2 Locations` remain candidates for manual location verification. The daily digest catches recently posted jobs (3-day default) rather than monitoring older postings indefinitely.
