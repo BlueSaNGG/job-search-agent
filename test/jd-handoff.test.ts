@@ -74,7 +74,9 @@ test("missing daily archives, drifted target profile and broken evidence fail cl
     "2026-11-16T14:00:00Z", "Beijing, China"), null);
   const records = SLOTS.map((_, i) => archive(i));
   records[0].jobs[0].url = "http://unsafe.example/jobs/1";
-  const result = buildWeeklyHandoff(records, END, "2026-11-16T14:00:00Z");
+  assert.throws(() => buildWeeklyHandoff(records, END, "2026-11-16T14:00:00Z"),
+    /Malformed or duplicate job evidence/); // invalid source data is rejected, never silently sanitized
+  const result = buildWeeklyHandoff(SLOTS.map((_, i) => archive(i)), END, "2026-11-16T14:00:00Z");
   assert.ok(result);
   assert.ok(result.jds.every(j => j.url.startsWith("https://")));
   const copy = structuredClone(result);
