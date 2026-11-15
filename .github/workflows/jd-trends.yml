@@ -36,6 +36,7 @@ jobs:
       - name: Analyze encrypted daily artifacts
         env:
           JD_INTEL_KEY: ${{ secrets.JD_INTEL_KEY }}
+          ALERT_LOCATIONS: ${{ vars.ALERT_TARGET_LOCATIONS || 'US_MAJOR_METROS, Shanghai, Hangzhou' }}
           GITHUB_TOKEN: ${{ github.token }}
           END_SLOT: ${{ inputs.end_slot }}
         run: |
@@ -54,6 +55,17 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 30
+      # This contains public job URLs and normalized skill signals only; it has
+      # no resume, raw JD, numerical fit score, private application outcome or credentials.
+      - name: Upload sanitized Phase C handoff (only on sufficient evidence)
+        if: ${{ hashFiles('.data/jd-weekly-handoff.v1.json') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: jd-weekly-handoff-v1
+          path: .data/jd-weekly-handoff.v1.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
       - name: Cleanup
         if: always()
-        run: rm -f .data/jd-trends-summary.json .data/jd-trends-summary.md
+        run: rm -f .data/jd-trends-summary.json .data/jd-trends-summary.md .data/jd-weekly-handoff.v1.json
