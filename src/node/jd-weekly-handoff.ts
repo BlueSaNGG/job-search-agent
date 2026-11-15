@@ -48,8 +48,8 @@ export function canonicalJson(value: unknown): string {
   return JSON.stringify(sort(value));
 }
 
-export function contentDigest(value: Record<string, unknown>): string {
-  const { content_digest: _ignored, ...payload } = value;
+export function contentDigest(value: object): string {
+  const { content_digest: _ignored, ...payload } = value as Record<string, unknown>;
   return createHash("sha256").update(canonicalJson(payload), "utf8").digest("hex");
 }
 
