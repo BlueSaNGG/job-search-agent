@@ -180,9 +180,14 @@ export interface EmailRanking {
 }
 
 /** Unresolved ATS locations are candidates for manual review, not verified target cities. */
+function hasUnverifiedLocation(j: DiscoveredJob): boolean {
+  const loc = j.location.trim();
+  return !loc || /^\d+\s+locations?$/i.test(loc);
+}
+
 function emailLocation(j: DiscoveredJob): string {
   const loc = j.location.trim();
-  return !loc || /^\d+\s+locations?$/i.test(loc)
+  return hasUnverifiedLocation(j)
     ? `${loc || "Not listed"} (location unverified)`
     : loc;
 }
@@ -236,7 +241,7 @@ export function renderEmail(
   const notes: string[] = [];
   if (opts.failed?.length) notes.push(`Couldn't read today: ${opts.failed.join(", ")}. They'll be tried again next time.`);
   if (ranked) notes.push("Similarity (embedding similarity, 0-100) compares resume and JD text; it is NOT a job-fit probability, eligibility check, required-skill verification, or interview prediction. Why/Gap notes are AI-generated hypotheses: verify requirements against the full official JD.");
-  if (maybeJobs.some(j => emailLocation(j).includes("(location unverified)"))) notes.push("Location warning: some postings list only a count or no location. They are included for manual review; do not assume they match your target cities.");
+  if (maybeJobs.some(hasUnverifiedLocation)) notes.push("Location warning: some postings list only a count or no location. They are included for manual review; do not assume they match your target cities.");
   if (opts.rankingError) notes.push(`Ranking by resume wasn't available today: ${opts.rankingError}`);
 
   const sections = [
