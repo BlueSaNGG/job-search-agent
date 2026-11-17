@@ -4,6 +4,8 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { decryptArchive } from "./jd-archive.ts";
 import { readRecentArtifacts } from "./jd-artifact-reader.ts";
 import { buildTrendReport, completedChicagoSlot, renderTrendMarkdown, validateDailyArchive } from "./jd-trends.ts";
+import { buildWeeklyHandoff } from "./jd-weekly-handoff.ts";
+import { rmSync } from "node:fs";
 
 function parseOptions(args: string[]): { github: boolean; files: string[]; endSlot: string } {
   let github = false, endSlot: string | undefined;
@@ -44,7 +46,14 @@ async function main(): Promise<void> {
   mkdirSync(".data", { recursive: true });
   writeFileSync(".data/jd-trends-summary.json", JSON.stringify(report, null, 2) + "\n", { mode: 0o600 });
   writeFileSync(".data/jd-trends-summary.md", markdown, { mode: 0o600 });
+  // Phase C handoff is optional and fail-closed: do not upload stale files on insufficient evidence.
+  const handoffPath = ".data/jd-weekly-handoff.v1.json";
+  rmSync(handoffPath, { force: true });
+  const handoff = buildWeeklyHandoff(archives, opts.endSlot, report.generated_at,
+    process.env.ALERT_LOCATIONS ?? "US_MAJOR_METROS, Shanghai, Hangzhou");
+  if (handoff) writeFileSync(handoffPath, JSON.stringify(handoff, null, 2) + "\n", { mode: 0o600 });
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);
+  console.log("JD weekly handoff: " + (handoff ? "ready (sanitized, unmerged)" : "skipped (evidence/profile gate)") + ".");
   console.log("JD trends: " + report.status + " | slots " + report.window.observed_slots +
     "/14 | evidence jobs " + report.sample.evidence_eligible_jobs +
     " | skills " + report.skills.length + " | discarded artifacts " + failures +

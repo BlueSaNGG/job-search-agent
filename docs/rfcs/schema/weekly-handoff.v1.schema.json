@@ -40,7 +40,8 @@
           "type": "string",
           "format": "date-time"
         }
-      }
+      },
+      "description": "Half-open interval of 14 America/Chicago scheduled daily slots, each starting at 19:00 local time (including next-day retries before 19:00). from/to are UTC instants. Local dates differ by 14; elapsed duration may be 335, 336 or 337 hours across DST. week_id is the ISO week of the local end date. Observations must be inside the window and not after generated_at."
     },
     "generated_at": {
       "type": "string",
