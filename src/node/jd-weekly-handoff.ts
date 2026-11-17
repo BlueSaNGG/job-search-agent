@@ -22,12 +22,33 @@ const SECTION: Record<string, "requirements" | "preferred" | "responsibilities" 
 };
 const STRENGTH: Record<SkillRequirement, number> = { mentioned: 0, preferred: 1, required: 2 };
 
+// IDs use deterministic code-unit order, never locale-sensitive collation.
+const compareId = (a: string, b: string): number => a < b ? -1 : a > b ? 1 : 0;
+
+/** A Chicago daily slot starts at 19:00, including retries until next day's 19:00. */
+export function slotStart(slot: string): Date {
+  const midnight = Date.parse(slot + "T00:00:00Z");
+  if (!Number.isFinite(midnight) || new Date(midnight).toISOString().slice(0, 10) !== slot)
+    throw new Error("Invalid slot");
+  const probe = new Date(midnight + 12 * 3600000);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago", hour: "2-digit", hourCycle: "h23",
+  }).formatToParts(probe);
+  const localHour = Number(parts.find(p => p.type === "hour")!.value);
+  return new Date(midnight + (19 + 12 - localHour) * 3600000);
+}
+
+function nextSlot(slot: string): string {
+  return new Date(Date.parse(slot + "T00:00:00Z") + MS_PER_DAY).toISOString().slice(0, 10);
+}
+
 function allowedUrl(value: string): boolean {
   try {
     const url = new URL(value);
     return url.protocol === "https:" && !url.username && !url.password &&
       !!url.hostname && url.hostname !== "localhost" && !url.hostname.endsWith(".local") &&
-      !/^(?:127|10)\./.test(url.hostname);
+      !/^(?:127|10|192\.168|169\.254|172\.(?:1[6-9]|2\d|3[01]))\./.test(url.hostname) &&
+      !url.hostname.includes(":");
   } catch {
     return false;
   }
@@ -75,7 +96,7 @@ function verifiedSignals(job: EnrichedJob): Array<{
     const old = byId.get(signal.id);
     if (!old || STRENGTH[signal.requirement] > STRENGTH[old.requirement]) byId.set(signal.id, signal);
   }
-  return [...byId.values()].sort((a, b) => a.id.localeCompare(b.id)).slice(0, 32).map(s => ({
+  return [...byId.values()].sort((a, b) => compareId(a.id, b.id)).slice(0, 32).map(s => ({
     id: s.id, label: LABELS[s.id] ?? s.id.replace(/_/g, " "),
     requirement: s.requirement, section: SECTION[s.section] ?? "other",
     evidence: "Automated keyword/section signal; verify the full official posting.",
@@ -123,6 +144,16 @@ export function buildWeeklyHandoff(
   const slots = slotRange(endSlot);
   const valid = records.map(x => validateDailyArchive(x))
     .filter(x => slots.includes(x.slot)).sort((a, b) => a.slot.localeCompare(b.slot));
+  const generated = Date.parse(generatedAt);
+  if (!Number.isFinite(generated)) throw new Error("Invalid generation time");
+  // Reject the whole optional handoff on bad attribution; do not silently retain
+  // a Phase B readiness claim after dropping the supporting observations.
+  for (const day of valid) for (const job of day.jobs) {
+    const observed = Date.parse(job.observed_at);
+    if (!Number.isFinite(observed) || observed < slotStart(day.slot).getTime() ||
+        observed >= slotStart(nextSlot(day.slot)).getTime() || observed > generated)
+      return null;
+  }
   const byJob = new Map<string, { job: EnrichedJob; first: string; last: string }>();
   for (const day of valid) for (const job of day.jobs) {
     if (!allowedUrl(job.url) || !/^[a-f0-9]{64}$/.test(job.content_hash)) continue;
@@ -132,7 +163,7 @@ export function buildWeeklyHandoff(
     byJob.set(job.id, { job, first: prev?.first ?? observed, last: observed });
   }
   const jds: WeeklyHandoff["jds"] = [...byJob.values()]
-    .sort((a, b) => a.job.id.localeCompare(b.job.id)).slice(0, 140)
+    .sort((a, b) => compareId(a.job.id, b.job.id)).slice(0, 140)
     .map(({ job, first, last }) => ({
       id: job.id, company_id: job.company_id, company_name: job.company_name,
       title: job.title, url: job.url, location: job.location,
@@ -162,9 +193,9 @@ export function buildWeeklyHandoff(
     }
   }
   const top_skills: WeeklyHandoff["top_skills"] = [...counts.values()]
-    .sort((a, b) => b.ids.size - a.ids.size || b.companies.size - a.companies.size || a.id.localeCompare(b.id))
+    .sort((a, b) => b.ids.size - a.ids.size || b.companies.size - a.companies.size || compareId(a.id, b.id))
     .slice(0, 128)
-    .sort((a, b) => a.id.localeCompare(b.id)).map(c => ({
+    .sort((a, b) => compareId(a.id, b.id)).map(c => ({
       id: c.id, label: c.label, distinct_jds: c.ids.size,
       distinct_companies: c.companies.size, required_jds: c.required,
       preferred_jds: c.preferred, mentioned_jds: c.mentioned,
@@ -182,10 +213,11 @@ export function buildWeeklyHandoff(
     ambiguous_location_jds: jds.filter(j => j.location_status === "needs_review").length,
     missing_description_jds: jds.filter(j => j.description_status === "unavailable").length,
   };
-  const next = new Date(Date.parse(slots[13] + "T00:00:00Z") + MS_PER_DAY).toISOString();
+  const nextDate = nextSlot(slots[13]);
+  const next = slotStart(nextDate).toISOString();
   const payload = {
-    schema_version: 1 as const, week_id: weekId(next.slice(0, 10)),
-    window: { from: slots[0] + "T00:00:00Z", to: next },
+    schema_version: 1 as const, week_id: weekId(nextDate),
+    window: { from: slotStart(slots[0]).toISOString(), to: next },
     generated_at: new Date(generatedAt).toISOString(),
     target_profile_version: HANDOFF_PROFILE_VERSION,
     source_coverage: coverage, jds, top_skills,
@@ -194,6 +226,7 @@ export function buildWeeklyHandoff(
       "Skill evidence is an automated section/keyword signal, not a JD quote or a verified requirement.",
       "Fit bands are approximate similarity buckets, not interview probabilities.",
       "Source coverage counts refer to the latest sampled daily run, not market-wide employer totals.",
+      "Window is 14 Chicago 19:00 daily slots, end exclusive; elapsed hours vary across DST.",
       "Earlier daily artifacts do not attest a target-profile version; confirm each location at application.",
     ].slice(0, 30).map(x => x.slice(0, 320)),
   };

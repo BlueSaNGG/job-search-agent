@@ -2,8 +2,8 @@
   "schema_version": 1,
   "week_id": "2026-W47",
   "window": {
-    "from": "2026-11-02T00:00:00Z",
-    "to": "2026-11-16T00:00:00Z"
+    "from": "2026-11-03T01:00:00.000Z",
+    "to": "2026-11-17T01:00:00.000Z"
   },
   "generated_at": "2026-11-16T14:00:00Z",
   "target_profile_version": "2026-11-v1",
@@ -85,5 +85,5 @@
   "limitations": [
     "This is a fictional sample for contract review; URLs and digest are illustrative, not verified employer postings."
   ],
-  "content_digest": "148d83c6c1d887b9bbe94e0f719f745edbefd73298de4cc5780db231664bd91b"
+  "content_digest": "566ed63d274b89821c4fbbe0fd6bb4a5d0610a0814e98fed6a7b80bc6733e875"
 }

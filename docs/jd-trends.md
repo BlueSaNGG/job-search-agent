@@ -30,7 +30,7 @@ Multiple `--file` arguments are supported. The CLI writes only minimized aggrega
 - **Coverage gate:** A report is `ready` only with at least 10/14 daily archives, >=4/7 in each half, >=10 eligible distinct JDs, >=5 per half, >=8 JDs with skill evidence overall, >=3 per half, and <=25% source failures. It uses `insufficient_evidence` otherwise and hides trend deltas.
 - **What the delta is:** Difference in the percentage of eligible sampled JDs mentioning a skill between two 7-day subwindows, in percentage points; **not** growth in hiring demand or a signal about compensation.
 - **Data quality:** Each archive supplies global source attempts/failures and number of selected jobs, not full per-source historical baselines. Missing days/feeds mean unknown coverage, never zero market interest.
-- **Versioning:** Daily archive schema stays compatible at v1; Phase B adds optional `skill_signals` and `skill_taxonomy_version: skill-signals-v1`. The aggregate report uses `jd-trends.v1`. No public weekly interview-prep handoff is emitted by this workflow; the canonical handoff remains a Phase C contract.
+- **Versioning:** Daily archive schema stays compatible at v1; Phase B adds optional `skill_signals` and `skill_taxonomy_version: skill-signals-v1`. The aggregate report uses `jd-trends.v1`. Phase B remains aggregate-only; the optional Phase C handoff below is a separate artifact.
 
 The report does not disclose individual resume similarity scores, job URLs, JD bodies, confidential company materials, or resume text. Real GitHub Actions artifact fetching needs to be validated on a run after daily encrypted archives actually exist. Tests cover the GitHub REST pagination shape, signed-URL token isolation, ZIP allowlist, same-slot reruns and corrupt-file fallback with mock fixtures.
 
@@ -41,3 +41,12 @@ When the same 14-day sample meets all Phase B evidence gates **and** `ALERT_TARG
 The handoff contains no full JD body, original quotations, resume, private application status, PayPal work content, or numeric resume-similarity scores. `evidence` explicitly describes automated keyword/section inference, **not** a fabricated quote from the underlying job description; the receiving reviewer must verify the official JD. `first_seen_at` means the first observed appearance **inside the sampled 14-day window**. The source coverage counts are from the newest successful daily archive (not all job-market sources). Older archives do not attest an exact target profile revision, so downstream proposals must keep location/source uncertainty visible.
 
 This phase only publishes a sanitized handoff artifact and **does not create cross-repository PRs or request write credentials**. Consumer validation, learning-record comparison, and scoped GitHub App automation are independent reviewed stages. Do not interpret this producer's presence as authorization to auto-edit `interview-prep`.
+
+
+### 11/16 contract corrections (pre-release v1)
+
+`window.from/to` bound 14 **scheduled Chicago daily slots**, each beginning at 19:00 and ending at the next local day's 19:00, including next-day retries. UTC endpoints vary with DST (335/336/337 elapsed hours); ISO week uses the local end date. Each observation must belong to its own archive slot and cannot be after `generated_at`; invalid attribution suppresses the entire optional handoff rather than exporting filtered evidence under an earlier readiness claim. A generated report can precede the final retry boundary: it contains only observations already made, not promises about future runs.
+
+Job and skill IDs use locale-independent UTF-16 code-unit order across producer and consumer. The pre-release schema/fixture now document this window; old zero-UTC fixture boundaries are rejected. Consumer policy remains private and human-maintained: it may suppress skills such as C/C++ regardless of market frequency. The producer does not receive learning progress or make curriculum decisions.
+
+`test/export-handoff-fixtures.ts` emits synthetic ordinary/DST cases for a pinned cross-repository CI contract test. This is not a live Actions artifact read-back and does not start cross-repository automation.
