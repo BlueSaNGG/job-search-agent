@@ -180,7 +180,7 @@ export interface EmailRanking {
 }
 
 /** Unresolved ATS locations are candidates for manual review, not verified target cities. */
-function hasUnverifiedLocation(j: DiscoveredJob): boolean {
+export function hasUnverifiedLocation(j: DiscoveredJob): boolean {
   const loc = j.location.trim();
   return !loc || /^\d+\s+locations?$/i.test(loc);
 }

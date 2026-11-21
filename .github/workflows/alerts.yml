@@ -54,6 +54,8 @@ concurrency:
 
 jobs:
   alerts:
+    outputs:
+      published: ${{ steps.board.outputs.published }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -117,6 +119,7 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           JD_INTEL_KEY: ${{ secrets.JD_INTEL_KEY }}
+          LEADERBOARD_EXPORT: ${{ runner.temp }}/ranked-jobs.json
           JD_INTEL_SLOT: ${{ steps.due.outputs.slot }}
           ALERT_LOCATIONS: ${{ vars.ALERT_TARGET_LOCATIONS || 'US_MAJOR_METROS, Shanghai, Hangzhou' }}
           ALERT_TOP_N: ${{ vars.ALERT_TOP_N }}
@@ -173,3 +176,26 @@ jobs:
       - name: Clean up encrypted JD archive
         if: ${{ always() && steps.due.outputs.run == 'true' }}
         run: rm -f .data/jd-intelligence-slot.enc
+
+      - name: Publish leaderboard snapshot
+        id: board
+        if: steps.due.outputs.run == 'true' && (inputs.mode == '' || inputs.mode == 'send') && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: |
+          export_path="$RUNNER_TEMP/ranked-jobs.json"
+          if [[ ! -f "$export_path" ]]; then exit 0; fi
+          node --import tsx src/node/leaderboard.ts "$export_path"
+          git add -f .data/leaderboard-state.json docs/leaderboard.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "alerts: refresh rolling leaderboard"
+          git push
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+  pages:
+    needs: alerts
+    if: needs.alerts.outputs.published == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/leaderboard-pages.yml
