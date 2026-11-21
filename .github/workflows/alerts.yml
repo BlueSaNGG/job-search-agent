@@ -63,6 +63,8 @@ jobs:
       ALERT_HOUR: "19"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Due?
         id: due
@@ -88,7 +90,7 @@ jobs:
 
       - name: Install
         if: steps.due.outputs.run == 'true'
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Prepare
         if: steps.due.outputs.run == 'true'

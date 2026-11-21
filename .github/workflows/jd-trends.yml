@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: 22
       - name: Install
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Initialize optional local environment file
         run: touch .env  # npm's --env-file=.env requires an existing file
       - name: Analyze encrypted daily artifacts

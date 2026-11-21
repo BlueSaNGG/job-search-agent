@@ -25,6 +25,6 @@ jobs:
         with:
           node-version: 22
       - name: Install
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Check eight new public ATS boards
         run: npm run check-companies -- drw imc airwallex anyscale hightouch modal fireworks crusoe
