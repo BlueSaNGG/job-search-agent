@@ -37,6 +37,6 @@ The [weekly top 20](https://bluesangg.github.io/job-search-agent/) ranks all sco
 
 An optional Cloudflare Worker dispatches Job alerts on main at 19:02 America/Chicago. The two UTC cron entries cover daylight saving time. The Worker selects the Chicago evening slot, and the workflow checks committed state after it leaves the queue. GitHub's scheduled retries remain enabled.
 
-From an authenticated Wrangler session with Worker deployment access, run `npm ci` and `npm run deploy:trigger`. Set the Worker secret with `npx wrangler secret put GITHUB_TOKEN -c wrangler.trigger.jsonc` using a fine-grained GitHub token restricted to this repository with Actions write permission. The existing Workers AI token is used separately by the ranking step.
+Add JOB_ALERTS_DISPATCH_TOKEN to the repository's Actions secrets (a fine-grained GitHub token scoped to this repository with Actions write permission). The Deploy evening trigger workflow on main deploys the Worker and configures its secret. It uses CF_ACCOUNT_ID and CF_API_TOKEN; set CF_WORKER_DEPLOY_TOKEN if the existing ranking token lacks deployment permissions. Re-run the deployment after updating credentials.
 
 For rollout verification, check the first evening dispatch on main for mode scheduled, then confirm the slot in docs/leaderboard.json and that the following scheduled fallback skips the completed slot.
