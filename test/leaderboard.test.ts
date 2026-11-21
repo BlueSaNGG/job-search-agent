@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { exportBoard, publish } from "../src/node/leaderboard.ts";
+import { exportBoard, merge, publish } from "../src/node/leaderboard.ts";
 
 test("overflow candidates surface after expiry; retries preserve publication", t => {
   const dir = mkdtempSync(join(tmpdir(), "leaderboard-"));
@@ -36,4 +36,33 @@ test("overflow candidates surface after expiry; retries preserve publication", t
   rmSync(state);
   assert.throws(() => publish(input,state,board));
   assert.equal(read(),saved);
+});
+
+function entry(id: string, company: string, similarity: number, slot: string) {
+  return {
+    id, company, similarity, first_seen: slot, last_seen: slot,
+    title: "Engineer", type: "SWE" as const, url: "https://example.com/jobs",
+    location: null, location_unverified: true, posted: null, salary: null,
+  };
+}
+
+test("repeat sightings keep the highest score and both ends of the observed date range", () => {
+  const first = "2026-11-18";
+  let state: NonNullable<Parameters<typeof merge>[0]> = {slot: first, entries: [entry("a", "Acme", 80, first)]};
+  for (const [slot, score] of [["2026-11-19", 95], ["2026-11-20", 70]] as const) {
+    const result = merge(state, {slot, entries: [entry("a", "Acme", score, slot)]});
+    assert.ok(result);
+    assert.deepEqual(result.state.entries, [{...entry("a", "Acme", 95, slot), first_seen: first}]);
+    state = result.state;
+  }
+});
+
+test("equal scores sort by company then id regardless of scan order", () => {
+  const slot = "2026-11-21";
+  const entries = [entry("a", "Beta", 90, slot), entry("z", "Acme", 90, slot),
+    entry("b", "Acme", 90, slot), entry("c", "Gamma", 95, slot)];
+  for (const input of [entries, [...entries].reverse()]) {
+    const result = merge(null, {slot, entries: input});
+    assert.deepEqual(result?.state.entries.map(e => e.id), ["c", "b", "z", "a"]);
+  }
 });
