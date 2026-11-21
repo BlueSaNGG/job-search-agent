@@ -40,9 +40,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "send = normal run, dry-run = print the email in the log only, test-email = check SMTP"
+        description: "scheduled = skip completed slots, send = normal run, dry-run = print the email in the log only, test-email = check SMTP"
         type: choice
-        options: [send, dry-run, test-email]
+        options: [send, dry-run, test-email, scheduled]
         default: send
 
 permissions:
@@ -73,7 +73,7 @@ jobs:
           if [ "$hour" -ge "$ALERT_HOUR" ]; then slot=$(date +%F); else slot=$(date -d yesterday +%F); fi
           last=$(cat .data/alerts-last-run 2>/dev/null || true)
           echo "slot=$slot" >> "$GITHUB_OUTPUT"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.mode }}" != "scheduled" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           elif [ -z "$last" ] || [[ "$last" < "$slot" ]]; then
             echo "Running the $slot slot (Chicago time $(date '+%F %H:%M'))."
@@ -135,7 +135,7 @@ jobs:
           esac
 
       - name: Save what was sent
-        if: steps.due.outputs.run == 'true' && (inputs.mode == '' || inputs.mode == 'send')
+        if: steps.due.outputs.run == 'true' && (inputs.mode == '' || inputs.mode == 'send' || inputs.mode == 'scheduled')
         env:
           STATE_KEY: ${{ secrets.STATE_KEY }}
         run: |
@@ -165,7 +165,7 @@ jobs:
       # still preserves today's encrypted snapshot; an upload failure cannot
       # undo the seen-state commit. Only ciphertext is uploaded.
       - name: Upload encrypted daily JD archive (30-day retention)
-        if: ${{ always() && steps.due.outputs.run == 'true' && (inputs.mode == '' || inputs.mode == 'send') && hashFiles('.data/jd-intelligence-slot.enc') != '' }}
+        if: ${{ always() && steps.due.outputs.run == 'true' && (inputs.mode == '' || inputs.mode == 'send' || inputs.mode == 'scheduled') && hashFiles('.data/jd-intelligence-slot.enc') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: jd-intelligence-${{ steps.due.outputs.slot }}
@@ -181,7 +181,7 @@ jobs:
 
       - name: Publish leaderboard snapshot
         id: board
-        if: steps.due.outputs.run == 'true' && (inputs.mode == '' || inputs.mode == 'send') && github.ref == 'refs/heads/main'
+        if: steps.due.outputs.run == 'true' && (inputs.mode == '' || inputs.mode == 'send' || inputs.mode == 'scheduled') && github.ref == 'refs/heads/main'
         continue-on-error: true
         run: |
           export_path="$RUNNER_TEMP/ranked-jobs.json"
