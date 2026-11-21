@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['docs/index.html']
+    paths: ['docs/index.html', '.github/workflows/leaderboard-pages.yml']
 permissions:
+  actions: read
   contents: read
   pages: write
   id-token: write
