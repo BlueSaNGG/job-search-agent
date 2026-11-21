@@ -195,6 +195,7 @@ jobs:
     needs: alerts
     if: needs.alerts.outputs.published == 'true'
     permissions:
+      actions: read
       contents: read
       pages: write
       id-token: write
