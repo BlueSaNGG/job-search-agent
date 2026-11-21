@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job matches · Weekly top 20</title>
+<style>
+*{box-sizing:border-box}body{margin:0 auto;padding:2rem 1rem;max-width:48rem;font:1rem/1.5 system-ui;color:#182f2e;background:#fafaf6}h1{font: bold clamp(2rem,6vw,3.2rem)/1.1 Georgia,serif;margin:.5rem 0}a{color:#115e59}ol{padding-left:2rem}li{padding:1rem .5rem;border-top:1px solid #ccd6d1}li a{font-weight:650}small{display:block;color:#374f4e}header p{max-width:40rem}
+</style>
+<main><header><h1>Weekly top 20 job matches</h1><p>Similarity measures how closely a posting matches the owner’s résumé. It does not predict eligibility or an offer. <a href="https://github.com/BlueSaNGG/job-search-agent">Repository</a></p></header>
+<p id="status" role="status">Loading matches…</p><ol id="jobs"></ol></main>
+<script type="module">
+const status = document.querySelector('#status');
+try {
+  const response = await fetch('./leaderboard.json');
+  if (response.status === 404) status.textContent = 'Waiting for the first ranked scan.';
+  else {
+    if (!response.ok) throw Error();
+    const board = await response.json();
+    const updated = new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Chicago'}).format(new Date(board.generated_at));
+    status.textContent = board.window.from + ' – ' + board.slot + ' · Updated ' + updated + ' (Chicago)' + (board.entries.length ? '' : ' · No matches this week.');
+    for (const job of board.entries) {
+      const row = document.createElement('li'), link = document.createElement('a'), detail = document.createElement('small');
+      link.textContent = job.title;
+      if (['http:','https:'].includes(new URL(job.url).protocol)) link.href = job.url;
+      detail.textContent = [job.company, (job.location || 'Not listed') + (job.location_unverified ? ' (location unverified)' : ''), job.salary, job.posted && 'Posted ' + job.posted].filter(Boolean).join(' · ');
+      row.append(link, ' · Similarity ' + job.similarity, job.first_seen === board.slot ? ' · NEW' : '', detail);
+      document.querySelector('#jobs').append(row);
+    }
+  }
+} catch { status.textContent = 'Matches could not be loaded. Refresh to try again.'; }
+</script></html>

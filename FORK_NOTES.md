@@ -126,3 +126,7 @@ Until those are set, run the workflow by hand with mode `dry-run`:
 it prints the email in the Actions log instead of sending it.
 GitHub disables scheduled workflows in forks by default — enable
 Actions in this fork's Settings before expecting the 19:00 run.
+
+### Rolling job leaderboard
+
+The [weekly top 20](https://bluesangg.github.io/job-search-agent/) ranks all scored digest candidates first seen in the latest seven Chicago slots. Only public posting fields and the numeric similarity score are stored. The email keeps its private fit notes. Select GitHub Actions as the Pages source and use **Deploy leaderboard** for a manual redeployment.

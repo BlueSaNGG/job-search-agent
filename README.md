@@ -28,3 +28,7 @@ Job listings with a missing location or a Workday placeholder such as `2 Locatio
 **Verify changes:** `npm test` and `npm run typecheck`. See `FORK_NOTES.md` for fork-specific behavior and security notes.
 
 **Company coverage:** 81 tracked companies; 56 have public ATS/custom readers, while 25 are manual-only. The eight latest Greenhouse/Ashby feeds are tested live in `.github/workflows/source-smoke.yml`. The company list is a watchlist, not a guarantee of better compensation or a match in every city.
+
+### Rolling job leaderboard
+
+The [weekly top 20](https://bluesangg.github.io/job-search-agent/) ranks all scored digest candidates first seen in the latest seven Chicago slots. Only public posting fields and the numeric similarity score are stored. The email keeps its private fit notes. Select GitHub Actions as the Pages source and use **Deploy leaderboard** for a manual redeployment.

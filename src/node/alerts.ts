@@ -26,6 +26,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { pickNewJobs, renderEmail, splitByAge, updateSeen, type SeenJobs } from "../core/alerts.ts";
 import { collectJobMatches, filterScanMatches } from "./scan.ts";
+import { exportBoard } from "./leaderboard.ts";
 import { saveDailyArchive } from "./jd-archive.ts";
 import { rankJobs, type Ranking } from "../core/rank.ts";
 import { mailConfig, sendMail } from "./mailer.ts";
@@ -152,8 +153,11 @@ async function main() {
   }
 
 
+  const boardExport = !args.has("--dry-run") && !args.has("--no-rank") && process.env.ALERT_RANKING !== "off"
+    ? process.env.LEADERBOARD_EXPORT : undefined;
   if (!toSend.length) {
     if (!args.has("--dry-run")) saveSeen(updateSeen(seen, silent, relevant));
+    exportBoard(boardExport, process.env.JD_INTEL_SLOT, [], {});
     console.log("Nothing new. No email sent.");
     return;
   }
@@ -171,6 +175,8 @@ async function main() {
       console.log(`Ranking skipped: ${rankingError}`);
     }
   }
+
+  if (ranking) exportBoard(boardExport, process.env.JD_INTEL_SLOT, toSend, ranking.scores);
 
   const email = renderEmail(toSend, { date: started, failed, firstRun, ranking, rankingError, maxAgeDays: args.has("--all") ? 0 : maxAgeDays, openMatches: relevant.length });
   if (args.has("--dry-run")) {
