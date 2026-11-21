@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "local": "node --env-file=.env --import tsx src/node/server.ts",
-    "test": "node --import tsx --test test/core.test.ts test/classify.test.ts test/discover.test.ts test/sources.test.ts test/agent.test.ts test/demo.test.ts test/alerts.test.ts test/salary.test.ts test/jd-archive.test.ts test/jd-trends.test.ts test/jd-handoff.test.ts test/leaderboard.test.ts",
+    "test": "node --import tsx --test test/core.test.ts test/classify.test.ts test/discover.test.ts test/sources.test.ts test/agent.test.ts test/demo.test.ts test/alerts.test.ts test/salary.test.ts test/jd-archive.test.ts test/jd-trends.test.ts test/jd-handoff.test.ts test/leaderboard.test.ts test/trigger.test.ts",
     "check-companies": "node --import tsx src/node/check-companies.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "deploy:trigger": "wrangler deploy -c wrangler.trigger.jsonc",
     "deploy:demo": "wrangler deploy -c wrangler.demo.jsonc",
     "push-demo": "node --env-file=.env --import tsx src/node/push-demo.ts",
     "alerts": "node --env-file=.env --import tsx src/node/alerts.ts",
