@@ -27,5 +27,21 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs
+      # deploy-pages looks the artifact up through the API, and the upload's
+      # registration can lag the upload step by a second or two. Without this
+      # wait the deploy flakes with "No artifacts named github-pages were
+      # found": four fresh dispatches failed that way in a row on 2026-11-21
+      # while the artifact itself uploaded fine every time.
+      - name: Wait for the Pages artifact to register
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in $(seq 1 24); do
+            count=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts?name=github-pages" --jq '.total_count')
+            if [ "$count" = "1" ]; then echo "Pages artifact registered."; exit 0; fi
+            sleep 5
+          done
+          echo "::error::github-pages artifact did not register within 2 minutes"
+          exit 1
       - uses: actions/deploy-pages@v4
         id: deploy
