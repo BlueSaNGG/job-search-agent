@@ -17,8 +17,7 @@ daily `Job alerts` run:
 
 - **Content:** the top 20 roles of the past 7 days (Chicago daily slots),
   deduplicated, sorted by similarity score descending.
-- **URL:** `https://bluesangg.github.io/job-search-agent/` (Pages source: `main`
-  branch, `/docs` folder).
+- **URL:** `https://bluesangg.github.io/job-search-agent/` (GitHub Actions deploys the public docs/ tree).
 - **Cost:** zero marginal cost — it rides the scheduled run that already
   happens. No new schedule, no new secrets, no Muse tokens.
 
@@ -58,36 +57,15 @@ JD text, embeddings, or any other resume-derived content. The page shows public
 job data plus a number. The similarity score itself is publishable: it is a
 single number per public posting and the owner explicitly asked to sort by it.
 
-## 5. Merge rules
+## 5. Rolling state and published view
 
-On each daily run, merge today's ranked maybe-jobs into the previously
-committed `docs/leaderboard.json`:
+Use the slot emitted by the workflow's Due? step for every date decision, including after-midnight retries. For slot S, include first_seen dates from S minus six calendar days through S inclusive. On November 21, keep November 15 and expire November 14. posted and last_seen never extend membership.
 
-1. **Dedupe by `id`.** If a job is re-seen, keep the higher similarity score
-   (scores should not change for a fixed resume, but never downgrade),
-   keep the earliest `first_seen`, update `last_seen`.
-2. **Expiry.** Drop entries whose `first_seen` is older than 7 days: the
-   window is slots `[today-6, today]` in Chicago time.
-3. **Sort.** Similarity descending; ties break by company, then by id
-   (same convention as the JD archive's ranked ordering).
-4. **Truncate** to the top 20.
-5. **Missing or corrupt previous JSON** (including the very first run):
-   regenerate from today only, do not crash, do not fail the run.
+Keep all eligible candidates in .data/leaderboard-state.json outside the Pages directory. This repository is public, so the same strict §4 allowlist applies to state, temporary exports and published entries. Store the latest processed slot and deduplicated records. The published Top 20 is a derived view.
 
-Output file shape:
+For each successful ranked scan, export the full scored maybe list before email truncation. A successful empty scan advances the window. Merge by id, preserve earliest first_seen, take the latest last_seen and highest score, then expire by first_seen. A same-slot retry unions candidates, even when seen filtering makes the second scan empty. Ignore older slots. Sort remaining entries by numeric similarity descending, then company and id ascending using a fixed ordinal comparison. Publish the first 20. Replaying identical input preserves the snapshot and timestamp.
 
-```json
-{
-  "generated_at": "2026-11-21T19:30:00-06:00",
-  "slot": "2026-11-21",
-  "window": { "from": "2026-11-15", "to": "2026-11-21" },
-  "entries": [ /* at most 20, per §4, sorted per §5 */ ]
-}
-```
-
-No backfill: the list accumulates naturally over 7 days. Day 1 shows only
-that day's top 20 (or fewer). Do not try to reconstruct history from the
-encrypted JD archives (they hold top-10 metadata, not full listings).
+Publish generated_at (Chicago time with UTC offset), slot, window {from, to}, and entries. Start empty on first install. If existing state is unreadable or unexpectedly missing while a public snapshot exists, preserve the last publication and warn so state can be restored from Git history. No archive backfill.
 
 ## 6. Page
 
@@ -99,41 +77,31 @@ encrypted JD archives (they hold top-10 metadata, not full listings).
   salary if stated, posted date, and a **NEW** badge when
   `first_seen == slot`.
 - Header: last-updated timestamp (Chicago time), window note
-  ("Top 20 · past 7 days"), and one line stating what the score is
+  ("Top 20 · seven days through [slot]"), and one line stating what the score is
   ("Similarity is embedding similarity to the owner's resume, not a
   probability or eligibility check") with a link back to the repo.
 - Empty state (no JSON yet, or zero entries): a plain message, not an error.
 
-## 7. Workflow changes (`alerts.yml`)
+## 7. Workflow and publication
 
-- Add a step after "Run job alerts" (only when due, only in `send` mode)
-  that runs the merge and writes `docs/leaderboard.json`.
-- Extend the existing "Save what was sent" step with one line:
-  `git add -f docs/leaderboard.json`, so the JSON rides the same bot commit
-  as the seen-state update.
-- **Failure isolation (hard requirement):** a leaderboard failure must never
-  fail the run, block the email, or undo the seen-state commit — the same
-  principle as the encrypted archive step. Log a warning and continue.
+During the existing scan, write a validated, allowlisted export to a temporary path and mark it complete by atomic rename. Catch export errors locally so SMTP delivery and the existing save step proceed. Distinguish a valid empty array from an absent or incomplete export.
+
+After “Save what was sent” succeeds, run a best-effort leaderboard step for a due, ranked send with a complete export. Generate and validate state and public JSON together, stage only their exact paths, and push both in one separate commit. On any failure warn and leave the last published commit intact. Never force-push or retry email to repair the board. Keep the existing workflow concurrency group.
+
+Deploy docs/ with a Pages Actions deployment after a successful publication, using the committed tree. Support manual redeployment of the latest snapshot without running alerts. A deployment failure leaves the previous site live and can be retried independently.
 
 ## 8. One-time setup
 
-Enable GitHub Pages on the repo: Settings → Pages → Build and deployment →
-Deploy from a branch → `main`, `/docs`. (Or the equivalent Pages API call.)
-Pages is currently not enabled on this repo. Enabling it also serves the rest
-of `docs/` (`rfcs/`, `jd-trends.md`) — already public content, no concern.
+Select GitHub Actions as the repository Pages source. Grant Pages deployment permissions only to the deployment job. Publish the initial page with its empty state, then refresh from the first successful ranked send. The site serves the public docs/ tree.
 
-First publish happens on the next scheduled run after merge.
+## 9. Acceptance tests
 
-## 9. Tests
-
-- Merge: dedupe keeps the higher score and earliest `first_seen`; expiry
-  drops entries older than 7 days (boundary: exactly 7 days old stays,
-  8 days old drops); sort order and company→id tie-break; truncation to 20.
-- Missing/corrupt previous JSON regenerates from today only.
-- **No-leak test:** feed a job carrying Why/Gap text and resume-derived
-  content; assert none of it appears anywhere in the output JSON.
-- Unranked / dry-run / test-email runs leave the committed JSON untouched.
-- The existing suite (`npm test`, typecheck) stays green; CI must pass.
+- Slot 1 supplies 20 high scores and slot 2 supplies 20 lower scores. With empty scans thereafter, all 20 from slot 2 surface on slot 8.
+- For November 21 keep November 15 and drop November 14. Cover after-midnight retries and daylight-saving transitions using Chicago calendar dates.
+- Verify deduplication, stable tie order, repeated and stale slots, valid empty scans, first install, and corrupt or unexpectedly missing state.
+- Validate exact allowed keys in state, export and public entries. Feed private sentinel strings through extra input fields and assert they never appear in the files or rendered page.
+- Skip unranked, dry-run and test-email updates. Inject first-run export, generation, push and deployment failures and verify the email and seen-state save complete independently. Verify redeployment sends no email.
+- Run the existing test suite and typecheck in the implementation PR.
 
 ## 10. Docs
 
