@@ -1,10 +1,10 @@
 {
-  "slot": "2026-11-21",
+  "slot": "2026-11-22",
   "window": {
-    "from": "2026-11-15",
-    "to": "2026-11-21"
+    "from": "2026-11-16",
+    "to": "2026-11-22"
   },
-  "generated_at": "2026-11-21T19:15:13-06:00",
+  "generated_at": "2026-11-22T19:16:22-06:00",
   "entries": [
     {
       "id": "microsoft:1970393557073471",
@@ -19,6 +19,20 @@
       "similarity": 67,
       "first_seen": "2026-11-21",
       "last_seen": "2026-11-21"
+    },
+    {
+      "id": "microsoft:1970393556980793",
+      "company": "Microsoft",
+      "title": "Senior Software Engineer",
+      "type": "SWE",
+      "location": "Redmond, WA, US",
+      "location_unverified": false,
+      "posted": "2026-11-20",
+      "salary": null,
+      "url": "https://apply.careers.microsoft.com/careers/job/1970393556980793",
+      "similarity": 60,
+      "first_seen": "2026-11-22",
+      "last_seen": "2026-11-22"
     }
   ]
 }
