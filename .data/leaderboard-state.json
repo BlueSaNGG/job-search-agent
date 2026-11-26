@@ -1,5 +1,5 @@
 {
-  "slot": "2026-11-24",
+  "slot": "2026-11-25",
   "entries": [
     {
       "id": "amazon:10613237",
@@ -44,6 +44,20 @@
       "last_seen": "2026-11-23"
     },
     {
+      "id": "amazon:10614445",
+      "company": "Amazon",
+      "title": "Software Engineer III, AWS CloudFormation",
+      "type": "SWE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614445/software-engineer-iii-aws-cloudformation",
+      "similarity": 76,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
       "id": "apple:200696624",
       "company": "Apple",
       "title": "Senior Software Engineer, App Intelligence Experience",
@@ -56,6 +70,20 @@
       "similarity": 76,
       "first_seen": "2026-11-24",
       "last_seen": "2026-11-24"
+    },
+    {
+      "id": "coinbase:8417630",
+      "company": "Coinbase",
+      "title": "Senior Software Engineer, Native Mobile",
+      "type": "SWE",
+      "location": "Remote - USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.coinbase.com/careers/positions/8417630?gh_jid=8417630",
+      "similarity": 76,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
     },
     {
       "id": "microsoft:1970393557076034",
@@ -112,6 +140,20 @@
       "similarity": 75,
       "first_seen": "2026-11-24",
       "last_seen": "2026-11-24"
+    },
+    {
+      "id": "amazon:10614118",
+      "company": "Amazon",
+      "title": "Software Development Engineer, BigMesh, Traffic Engineering",
+      "type": "SDE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614118/software-development-engineer-bigmesh-traffic-engineering",
+      "similarity": 75,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
     },
     {
       "id": "apple:200696469",
@@ -240,6 +282,90 @@
       "last_seen": "2026-11-24"
     },
     {
+      "id": "amazon:10614356",
+      "company": "Amazon",
+      "title": "Software Dev Engineer II, AWS Elastic Compute Cloud (EC2)",
+      "type": "SDE",
+      "location": "Arlington, Virginia, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614356/software-dev-engineer-ii-aws-elastic-compute-cloud-ec2",
+      "similarity": 74,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "amazon:10614461",
+      "company": "Amazon",
+      "title": "Software Development Engineer, AWS Console",
+      "type": "SDE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614461/software-development-engineer-aws-console",
+      "similarity": 74,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "amazon:10614632",
+      "company": "Amazon",
+      "title": "Senior Software Development Engineer, Agentic AI",
+      "type": "SDE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614632/senior-software-development-engineer-agentic-ai",
+      "similarity": 74,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "amazon:10615061",
+      "company": "Amazon",
+      "title": "Sr. Software Development Engineer, Annapurna Labs - LibNVMe",
+      "type": "SDE",
+      "location": "Cupertino, California, USA",
+      "location_unverified": false,
+      "posted": "2026-11-26",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10615061/sr-software-development-engineer-annapurna-labs-libnvme",
+      "similarity": 74,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "microsoft:1970393557076256",
+      "company": "Microsoft",
+      "title": "Senior Software Engineer",
+      "type": "SWE",
+      "location": "New York, NY, US; Mountain View, CA, US; Redmond, WA, US",
+      "location_unverified": false,
+      "posted": "2026-11-24",
+      "salary": "$120k–$261k",
+      "url": "https://apply.careers.microsoft.com/careers/job/1970393557076256",
+      "similarity": 74,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "microsoft:1970393557079338",
+      "company": "Microsoft",
+      "title": "Software Engineer II and/or Senior Software Engineer - AI Accelerator Networking",
+      "type": "SWE",
+      "location": "Redmond, WA, US; Mountain View, CA, US; Sunnyvale, CA, US",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": "$102k–$261k",
+      "url": "https://apply.careers.microsoft.com/careers/job/1970393557079338",
+      "similarity": 74,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
       "id": "reddit:8411613",
       "company": "Reddit",
       "title": "Senior Software Engineer, AI & Science Platform",
@@ -352,6 +478,62 @@
       "last_seen": "2026-11-24"
     },
     {
+      "id": "amazon:10613726",
+      "company": "Amazon",
+      "title": "Sr. Software Development Engineer, Resilience Infrastruction and Solutions: Incident Mitigation",
+      "type": "SDE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10613726/sr-software-development-engineer-resilience-infrastruction-and-solutions-incident-mitigation",
+      "similarity": 73,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "amazon:10613799",
+      "company": "Amazon",
+      "title": "Software Dev Engineer II, GenAIUX",
+      "type": "SDE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10613799/software-dev-engineer-ii-genaiux",
+      "similarity": 73,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "amazon:10614480",
+      "company": "Amazon",
+      "title": "Software Development Engineer, Amazon Quick",
+      "type": "SDE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614480/software-development-engineer-amazon-quick",
+      "similarity": 73,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "bloomberg:45234",
+      "company": "Bloomberg",
+      "title": "Senior Software Engineer - Vault",
+      "type": "SWE",
+      "location": "New York, New York, United States of America",
+      "location_unverified": false,
+      "posted": null,
+      "salary": null,
+      "url": "https://bloomberg.avature.net/careers/JobDetail/Senior-Software-Engineer-Vault/45234",
+      "similarity": 73,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
       "id": "microsoft:1970393557078515",
       "company": "Microsoft",
       "title": "Software Engineer II - Forward Deployed Engineer",
@@ -392,6 +574,20 @@
       "similarity": 73,
       "first_seen": "2026-11-24",
       "last_seen": "2026-11-24"
+    },
+    {
+      "id": "reddit:8415553",
+      "company": "Reddit",
+      "title": "Software Engineer, Ads",
+      "type": "SWE",
+      "location": "San Francisco, CA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": "$165k–$230k",
+      "url": "https://job-boards.greenhouse.io/reddit/jobs/8415553",
+      "similarity": 73,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
     },
     {
       "id": "roblox:8395051",
@@ -618,6 +814,34 @@
       "last_seen": "2026-11-24"
     },
     {
+      "id": "amazon:10614043",
+      "company": "Amazon",
+      "title": "Software Development Engineer, Annapurna Labs - LibNVMe",
+      "type": "SDE",
+      "location": "Cupertino, California, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614043/software-development-engineer-annapurna-labs-libnvme",
+      "similarity": 72,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "amazon:10614362",
+      "company": "Amazon",
+      "title": "Software Development Engineer III, Optimization Data",
+      "type": "SDE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614362/software-development-engineer-iii-optimization-data",
+      "similarity": 72,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
       "id": "apple:200696384",
       "company": "Apple",
       "title": "AR/VR Software Engineer, Siri and Visual Intelligence - Vision Products Software",
@@ -630,6 +854,20 @@
       "similarity": 72,
       "first_seen": "2026-11-24",
       "last_seen": "2026-11-24"
+    },
+    {
+      "id": "microsoft:1970393557075113",
+      "company": "Microsoft",
+      "title": "Software Engineer II",
+      "type": "SWE",
+      "location": "Redmond, WA, US",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": "$102k–$219k",
+      "url": "https://apply.careers.microsoft.com/careers/job/1970393557075113",
+      "similarity": 72,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
     },
     {
       "id": "mongodb:8406252",
@@ -772,6 +1010,62 @@
       "last_seen": "2026-11-24"
     },
     {
+      "id": "amazon:10614341",
+      "company": "Amazon",
+      "title": "Software Development Engineer",
+      "type": "SDE",
+      "location": "New York, New York, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614341/software-development-engineer",
+      "similarity": 71,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "amazon:10614414",
+      "company": "Amazon",
+      "title": "Senior Software Development Engineer, Amazon Quick",
+      "type": "SDE",
+      "location": "Santa Clara, California, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614414/senior-software-development-engineer-amazon-quick",
+      "similarity": 71,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "drw:8417238",
+      "company": "DRW",
+      "title": "Senior Software Engineer, Global Trading Operations (Clojure)",
+      "type": "SWE",
+      "location": "Chicago",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": "$175k–$250k",
+      "url": "https://job-boards.greenhouse.io/drweng/jobs/8417238",
+      "similarity": 71,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "discord:8958889002",
+      "company": "Discord",
+      "title": "Senior Software Engineer, Enterprise Platform",
+      "type": "SWE",
+      "location": "San Francisco Bay Area or Remote (West Coast)",
+      "location_unverified": false,
+      "posted": "2026-11-26",
+      "salary": null,
+      "url": "https://job-boards.greenhouse.io/discord/jobs/8958889002",
+      "similarity": 71,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
       "id": "microsoft:1970393557075030",
       "company": "Microsoft",
       "title": "Senior Software Engineer",
@@ -898,6 +1192,34 @@
       "last_seen": "2026-11-23"
     },
     {
+      "id": "microsoft:1970393557078503",
+      "company": "Microsoft",
+      "title": "Software Engineer II",
+      "type": "SWE",
+      "location": "Redmond, WA, US",
+      "location_unverified": false,
+      "posted": "2026-11-24",
+      "salary": "$102k–$219k",
+      "url": "https://apply.careers.microsoft.com/careers/job/1970393557078503",
+      "similarity": 70,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
+      "id": "robinhood:8355577",
+      "company": "Robinhood",
+      "title": "Software Engineer, Web, Government Products",
+      "type": "SWE",
+      "location": "Menlo Park, CA; New York, NY",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://boards.greenhouse.io/robinhood/jobs/8355577?t=gh_src=&gh_jid=8355577",
+      "similarity": 70,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
       "id": "robinhood:8355584",
       "company": "Robinhood",
       "title": "Senior Software Engineer, Full Stack, Government Products",
@@ -910,6 +1232,20 @@
       "similarity": 70,
       "first_seen": "2026-11-24",
       "last_seen": "2026-11-24"
+    },
+    {
+      "id": "microsoft:1970393557076281",
+      "company": "Microsoft",
+      "title": "Senior Software Engineer",
+      "type": "SWE",
+      "location": "Redmond, WA, US; Mountain View, CA, US",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": "$120k–$261k",
+      "url": "https://apply.careers.microsoft.com/careers/job/1970393557076281",
+      "similarity": 69,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
     },
     {
       "id": "perplexity:9e738c21-f2ab-49d7-b545-b519bb2cf8ae",
@@ -1010,6 +1346,20 @@
       "last_seen": "2026-11-23"
     },
     {
+      "id": "mongodb:7870848",
+      "company": "MongoDB",
+      "title": "Senior Software Engineer",
+      "type": "SWE",
+      "location": "New York City",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.mongodb.com/careers/job/?gh_jid=7870848",
+      "similarity": 66,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
       "id": "salesforce:JR359080",
       "company": "Salesforce",
       "title": "Software Engineering SMTS",
@@ -1022,6 +1372,20 @@
       "similarity": 66,
       "first_seen": "2026-11-23",
       "last_seen": "2026-11-23"
+    },
+    {
+      "id": "perplexity:8fe61c73-0daf-4432-a47d-44714c1ef764",
+      "company": "Perplexity",
+      "title": "Member of Technical Staff (AI Researcher)",
+      "type": "SWE",
+      "location": "San Francisco",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": "$220k–$485k",
+      "url": "https://jobs.ashbyhq.com/Perplexity/8fe61c73-0daf-4432-a47d-44714c1ef764",
+      "similarity": 65,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
     },
     {
       "id": "salesforce:JR366553",

@@ -1,10 +1,10 @@
 {
-  "slot": "2026-11-24",
+  "slot": "2026-11-25",
   "window": {
-    "from": "2026-11-18",
-    "to": "2026-11-24"
+    "from": "2026-11-19",
+    "to": "2026-11-25"
   },
-  "generated_at": "2026-11-24T19:20:43-06:00",
+  "generated_at": "2026-11-25T19:15:59-06:00",
   "entries": [
     {
       "id": "amazon:10613237",
@@ -49,6 +49,20 @@
       "last_seen": "2026-11-23"
     },
     {
+      "id": "amazon:10614445",
+      "company": "Amazon",
+      "title": "Software Engineer III, AWS CloudFormation",
+      "type": "SWE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614445/software-engineer-iii-aws-cloudformation",
+      "similarity": 76,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
+    },
+    {
       "id": "apple:200696624",
       "company": "Apple",
       "title": "Senior Software Engineer, App Intelligence Experience",
@@ -61,6 +75,20 @@
       "similarity": 76,
       "first_seen": "2026-11-24",
       "last_seen": "2026-11-24"
+    },
+    {
+      "id": "coinbase:8417630",
+      "company": "Coinbase",
+      "title": "Senior Software Engineer, Native Mobile",
+      "type": "SWE",
+      "location": "Remote - USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.coinbase.com/careers/positions/8417630?gh_jid=8417630",
+      "similarity": 76,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
     },
     {
       "id": "microsoft:1970393557076034",
@@ -117,6 +145,20 @@
       "similarity": 75,
       "first_seen": "2026-11-24",
       "last_seen": "2026-11-24"
+    },
+    {
+      "id": "amazon:10614118",
+      "company": "Amazon",
+      "title": "Software Development Engineer, BigMesh, Traffic Engineering",
+      "type": "SDE",
+      "location": "Seattle, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-25",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10614118/software-development-engineer-bigmesh-traffic-engineering",
+      "similarity": 75,
+      "first_seen": "2026-11-25",
+      "last_seen": "2026-11-25"
     },
     {
       "id": "apple:200696469",
@@ -240,48 +282,6 @@
       "posted": "2026-11-24",
       "salary": null,
       "url": "https://www.amazon.jobs/en/jobs/10613387/software-development-engineer-ii-ost-intuition-core",
-      "similarity": 74,
-      "first_seen": "2026-11-24",
-      "last_seen": "2026-11-24"
-    },
-    {
-      "id": "reddit:8411613",
-      "company": "Reddit",
-      "title": "Senior Software Engineer, AI & Science Platform",
-      "type": "SWE",
-      "location": "Remote - United States",
-      "location_unverified": false,
-      "posted": "2026-11-23",
-      "salary": null,
-      "url": "https://job-boards.greenhouse.io/reddit/jobs/8411613",
-      "similarity": 74,
-      "first_seen": "2026-11-23",
-      "last_seen": "2026-11-23"
-    },
-    {
-      "id": "salesforce:JR365811",
-      "company": "Salesforce",
-      "title": "Software Engineering SMTS",
-      "type": "SWE",
-      "location": "Texas - Dallas",
-      "location_unverified": false,
-      "posted": "2026-11-21",
-      "salary": null,
-      "url": "https://salesforce.wd12.myworkdayjobs.com/External_Career_Site/job/Texas---Dallas/Software-Engineering-SMTS_JR365811",
-      "similarity": 74,
-      "first_seen": "2026-11-23",
-      "last_seen": "2026-11-23"
-    },
-    {
-      "id": "stripe:8414532",
-      "company": "Stripe",
-      "title": "Infrastructure Engineer, Workflow Engine",
-      "type": "Infra/Platform",
-      "location": "Seattle, WA",
-      "location_unverified": false,
-      "posted": "2026-11-24",
-      "salary": "$157k–$235k",
-      "url": "https://stripe.com/jobs/search?gh_jid=8414532",
       "similarity": 74,
       "first_seen": "2026-11-24",
       "last_seen": "2026-11-24"
