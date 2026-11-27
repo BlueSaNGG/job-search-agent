@@ -1,5 +1,5 @@
 {
-  "slot": "2026-11-25",
+  "slot": "2026-11-26",
   "entries": [
     {
       "id": "amazon:10613237",
@@ -630,6 +630,20 @@
       "similarity": 72,
       "first_seen": "2026-11-24",
       "last_seen": "2026-11-24"
+    },
+    {
+      "id": "amazon:10610906",
+      "company": "Amazon",
+      "title": "Embedded Software Engineer, Amazon Leo Government, ALG Software",
+      "type": "SWE",
+      "location": "Redmond, Washington, USA",
+      "location_unverified": false,
+      "posted": "2026-11-26",
+      "salary": null,
+      "url": "https://www.amazon.jobs/en/jobs/10610906/embedded-software-engineer-amazon-leo-government-alg-software",
+      "similarity": 72,
+      "first_seen": "2026-11-26",
+      "last_seen": "2026-11-26"
     },
     {
       "id": "amazon:10611083",
