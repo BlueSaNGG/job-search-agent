@@ -1,11 +1,25 @@
 {
-  "slot": "2026-11-26",
+  "slot": "2026-11-27",
   "window": {
-    "from": "2026-11-20",
-    "to": "2026-11-26"
+    "from": "2026-11-21",
+    "to": "2026-11-27"
   },
-  "generated_at": "2026-11-26T19:22:35-06:00",
+  "generated_at": "2026-11-27T19:23:04-06:00",
   "entries": [
+    {
+      "id": "nvidia:JR2025882",
+      "company": "Nvidia",
+      "title": "Software DevOps Engineer, Networking",
+      "type": "SRE/DevOps",
+      "location": "US, CA, Santa Clara",
+      "location_unverified": false,
+      "posted": "2026-11-26",
+      "salary": "$150k–$345k",
+      "url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Software-DevOps-Engineer--Networking_JR2025882",
+      "similarity": 78,
+      "first_seen": "2026-11-27",
+      "last_seen": "2026-11-27"
+    },
     {
       "id": "amazon:10613237",
       "company": "Amazon",
@@ -105,6 +119,20 @@
       "last_seen": "2026-11-24"
     },
     {
+      "id": "nvidia:JR2022783",
+      "company": "Nvidia",
+      "title": "Systems Software Engineer - Infrastructure",
+      "type": "SWE",
+      "location": "US, CA, Santa Clara",
+      "location_unverified": false,
+      "posted": "2026-11-26",
+      "salary": "$158k–$299k",
+      "url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Systems-Software-Engineer---Infrastructure_JR2022783",
+      "similarity": 76,
+      "first_seen": "2026-11-27",
+      "last_seen": "2026-11-27"
+    },
+    {
       "id": "amazon:10612077",
       "company": "Amazon",
       "title": "Software Dev Engineer III - AMZ10563921",
@@ -189,6 +217,34 @@
       "last_seen": "2026-11-24"
     },
     {
+      "id": "nvidia:JR2028334",
+      "company": "Nvidia",
+      "title": "Senior Software Engineer, AV Analysis Platform",
+      "type": "SWE",
+      "location": "2 Locations",
+      "location_unverified": true,
+      "posted": "2026-11-26",
+      "salary": "$233k–$442k",
+      "url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Senior-Software-Engineer--AV-Analysis-Platform_JR2028334-1",
+      "similarity": 75,
+      "first_seen": "2026-11-27",
+      "last_seen": "2026-11-27"
+    },
+    {
+      "id": "nvidia:JR2028694",
+      "company": "Nvidia",
+      "title": "Network Software Engineer, Automation and Intelligence",
+      "type": "SWE",
+      "location": "US, CA, Santa Clara",
+      "location_unverified": false,
+      "posted": "2026-11-26",
+      "salary": "$218k–$416k",
+      "url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Network-Software-Engineer--Automation-and-Intelligence_JR2028694",
+      "similarity": 75,
+      "first_seen": "2026-11-27",
+      "last_seen": "2026-11-27"
+    },
+    {
       "id": "airwallex:bd91b283-8de0-41bd-aba4-8cae281808a7",
       "company": "Airwallex",
       "title": "Software Engineer, AI Tooling",
@@ -229,62 +285,6 @@
       "similarity": 74,
       "first_seen": "2026-11-23",
       "last_seen": "2026-11-23"
-    },
-    {
-      "id": "amazon:10612231",
-      "company": "Amazon",
-      "title": "Software Dev Engineer, Amazon Leo",
-      "type": "SDE",
-      "location": "Redmond, Washington, USA",
-      "location_unverified": false,
-      "posted": "2026-11-23",
-      "salary": null,
-      "url": "https://www.amazon.jobs/en/jobs/10612231/software-dev-engineer-amazon-leo",
-      "similarity": 74,
-      "first_seen": "2026-11-23",
-      "last_seen": "2026-11-23"
-    },
-    {
-      "id": "amazon:10612940",
-      "company": "Amazon",
-      "title": "Software Dev Engineer III - AMZ10564023",
-      "type": "SDE",
-      "location": "Arlington, Virginia, USA",
-      "location_unverified": false,
-      "posted": "2026-11-24",
-      "salary": "$168k–$227k",
-      "url": "https://www.amazon.jobs/en/jobs/10612940/software-dev-engineer-iii-amz10564023",
-      "similarity": 74,
-      "first_seen": "2026-11-24",
-      "last_seen": "2026-11-24"
-    },
-    {
-      "id": "amazon:10612944",
-      "company": "Amazon",
-      "title": "Software Dev Engineer III - AMZ10563900",
-      "type": "SDE",
-      "location": "Nashville, Tennessee, USA",
-      "location_unverified": false,
-      "posted": "2026-11-24",
-      "salary": "$160k–$216k",
-      "url": "https://www.amazon.jobs/en/jobs/10612944/software-dev-engineer-iii-amz10563900",
-      "similarity": 74,
-      "first_seen": "2026-11-24",
-      "last_seen": "2026-11-24"
-    },
-    {
-      "id": "amazon:10613387",
-      "company": "Amazon",
-      "title": "Software Development Engineer II, OST - Intuition Core",
-      "type": "SDE",
-      "location": "Nashville, Tennessee, USA",
-      "location_unverified": false,
-      "posted": "2026-11-24",
-      "salary": null,
-      "url": "https://www.amazon.jobs/en/jobs/10613387/software-development-engineer-ii-ost-intuition-core",
-      "similarity": 74,
-      "first_seen": "2026-11-24",
-      "last_seen": "2026-11-24"
     }
   ]
 }
